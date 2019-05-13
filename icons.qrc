@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/icons"/>
+    <qresource prefix="/">
+        <file>icons/cage.png</file>
+        <file>icons/camera.png</file>
+        <file>icons/cross.png</file>
+        <file>icons/help.png</file>
+        <file>icons/help2.png</file>
+        <file>icons/open.png</file>
+        <file>icons/open_cage.png</file>
+        <file>icons/open_camera.png</file>
+        <file>icons/open_scalar.png</file>
+        <file>icons/open_skeleton.png</file>
+        <file>icons/question.png</file>
+        <file>icons/RectangleSelection.png</file>
+        <file>icons/save.png</file>
+        <file>icons/save_snapshot.png</file>
+        <file>icons/text.png</file>
+        <file>icons/textErase.png</file>
+        <file>icons/textInsertHLine.png</file>
+        <file>icons/texture.png</file>
+        <file>icons/work.png</file>
+    </qresource>
+</RCC>

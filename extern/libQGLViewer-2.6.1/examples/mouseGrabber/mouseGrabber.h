@@ -1,0 +1,67 @@
+/****************************************************************************
+
+ Copyright (C) 2002-2014 Gilles Debunne. All rights reserved.
+
+ This file is part of the QGLViewer library version 2.6.1.
+
+ http://www.libqglviewer.com - contact@libqglviewer.com
+
+ This file may be used under the terms of the GNU General Public License 
+ versions 2.0 or 3.0 as published by the Free Software Foundation and
+ appearing in the LICENSE file included in the packaging of this file.
+ In addition, as a special exception, Gilles Debunne gives you certain 
+ additional rights, described in the file GPL_EXCEPTION in this package.
+
+ libQGLViewer uses dual licensing. Commercial/proprietary software must
+ purchase a libQGLViewer Commercial License.
+
+ This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+*****************************************************************************/
+
+#include <QGLViewer/qglviewer.h>
+#include <QGLViewer/mouseGrabber.h>
+#include <QGLViewer/manipulatedFrame.h>
+
+class CameraPathPlayer : public qglviewer::MouseGrabber
+{
+public:
+  CameraPathPlayer(int nb) : pathNb(nb) {}
+  void checkIfGrabsMouse(int x, int y, const qglviewer::Camera* const camera);
+  int yPos() { return 25*pathNb; }
+
+protected:
+  void mousePressEvent(QMouseEvent* const, qglviewer::Camera* const camera) { camera->playPath(pathNb); }
+
+private:
+  int pathNb;
+};
+
+
+class Spiral
+{
+public:
+  void draw() const;
+  void setPosition(const qglviewer::Vec& pos) { mf_.setPosition(pos); };
+
+private:
+  qglviewer::ManipulatedFrame mf_;
+};
+
+
+class Viewer : public QGLViewer
+{
+protected :
+  virtual void init();
+  virtual void draw();
+  virtual QString helpString() const;
+
+  void displayPlayers();
+  void updatePlayers();
+
+private:
+  CameraPathPlayer** player_;
+  int nbPlayers_;
+  QList<Spiral> spiral_;
+};
