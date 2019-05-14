@@ -21,10 +21,10 @@ SOURCES += ./src/main.cpp \
 
 #QGLViewer
 {
-    unix:!macx: LIBS += -L$$PWD/extern/libQGLViewer-2.7.1/lib/ -lQGLViewer-qt5
+    unix:!macx: LIBS += -L$$PWD/extern/libQGLViewer-2.7.1/QGLViewer/ -lQGLViewer-qt5
 
-    INCLUDEPATH += $$PWD/extern/libQGLViewer-2.7.1/include
-    DEPENDPATH += $$PWD/extern/libQGLViewer-2.7.1/include
+    INCLUDEPATH += $$PWD/extern/libQGLViewer-2.7.1/QGLViewer
+    DEPENDPATH += $$PWD/extern/libQGLViewer-2.7.1/QGLViewer
 }
 
 #GSL
@@ -46,4 +46,3 @@ release:QMAKE_CFLAGS_RELEASE += -O3 \
 
 RESOURCES += \
     icons.qrc
-
