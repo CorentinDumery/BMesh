@@ -135,13 +135,15 @@ public:
   }
 
   QString helpString() const {
-    QString text("<h2>Our cool project</h2>");
+    QString text("<h2>Our BMesh Implementation</h2>");
     text += "<p>";
-    text += "This is a research application, it can explode.";
+    text += "This is a research application. It is based on an article by Zhongping Ji, Ligang Liu and ";
+    text += "Yigang Wang called \"B-Mesh: A Fast Modeling System for Base Meshes of 3D Articulated Shapes\".";
     text += "<h3>Participants</h3>";
     text += "<ul>";
-    text += "<li>jmt</li>";
-    text += "<li>...</li>";
+    text += "<li>Timothee Chauvin</li>";
+    text += "<li>Ginger Delmas</li>";
+    text += "<li>Corentin Dumery</li>";
     text += "</ul>";
     text += "<h3>Basics</h3>";
     text += "<p>";
