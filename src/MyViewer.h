@@ -27,11 +27,13 @@
 #include <QToolBar>
 
 #include "qt/QSmartAction.h"
+#include "skeleton.h"
 
 class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   Q_OBJECT
 
   Mesh mesh;
+  Skeleton squeleton;
 
   QWidget *controls;
 
@@ -72,17 +74,28 @@ public:
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glColor3f(0.5, 0.5, 0.8);
-    glBegin(GL_TRIANGLES);
-    for (unsigned int t = 0; t < mesh.triangles.size(); ++t) {
-      point3d const &p0 = mesh.vertices[mesh.triangles[t][0]].p;
-      point3d const &p1 = mesh.vertices[mesh.triangles[t][1]].p;
-      point3d const &p2 = mesh.vertices[mesh.triangles[t][2]].p;
-      point3d const &n = point3d::cross(p1 - p0, p2 - p0).direction();
-      glNormal3f(n[0], n[1], n[2]);
-      glVertex3f(p0[0], p0[1], p0[2]);
-      glVertex3f(p1[0], p1[1], p1[2]);
-      glVertex3f(p2[0], p2[1], p2[2]);
-    }
+
+    // TODO : mettre dans la classe Mesh
+    // ---- draw mesh -----
+    //    glBegin(GL_TRIANGLES);
+    //    for (unsigned int t = 0; t < mesh.triangles.size(); ++t) {
+    //      point3d const &p0 = mesh.vertices[mesh.triangles[t][0]].p;
+    //      point3d const &p1 = mesh.vertices[mesh.triangles[t][1]].p;
+    //      point3d const &p2 = mesh.vertices[mesh.triangles[t][2]].p;
+    //      point3d const &n = point3d::cross(p1 - p0, p2 - p0).direction();
+    //      glNormal3f(n[0], n[1], n[2]);
+    //      glVertex3f(p0[0], p0[1], p0[2]);
+    //      glVertex3f(p1[0], p1[1], p1[2]);
+    //      glVertex3f(p2[0], p2[1], p2[2]);
+    //    }
+    //    glEnd();
+    // ---- draw mesh -----
+
+    squeleton.draw();
+
+    glBegin(GL_LINES);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 6.0f, 0.0f);
     glEnd();
   }
 

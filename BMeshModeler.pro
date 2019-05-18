@@ -14,10 +14,15 @@ HEADERS += ./src/point3.h \
     ./src/Mesh.h \
     ./src/MyViewer.h \
     ./src/gl/GLUtilityMethods.h \
-    ./src/gl/BasicColors.h
+    ./src/gl/BasicColors.h \
+    ./src/sphereedit.h \
+    src/node.h \
+    src/skeleton.h
 SOURCES += ./src/main.cpp \
     ./src/gl/GLUtilityMethods.cpp\
-    ./src/gl/BasicColors.cpp
+    ./src/gl/BasicColors.cpp \
+    ./src/sphereedit.cpp \
+    src/skeleton.cpp
 
 #QGLViewer
 {
@@ -46,3 +51,6 @@ release:QMAKE_CFLAGS_RELEASE += -O3 \
 
 RESOURCES += \
     icons.qrc
+
+FORMS += \
+    src/sphereedit.ui

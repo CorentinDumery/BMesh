@@ -1,33 +1,53 @@
 
+#include "MyViewer.h"
+#include "node.h"
+#include "sphereedit.h"
+#include "skeleton.h"
 #include <QApplication>
 #include <QMainWindow>
 #include <QToolBar>
-#include "MyViewer.h"
 
+int main(int argc, char **argv) {
+  QApplication app(argc, argv);
 
+  MyViewer *viewer = new MyViewer;
 
-int main( int argc , char** argv )
-{
-    QApplication app( argc , argv );
+  QMainWindow *mainWindow = new QMainWindow;
+  QWidget *mainWidget = new QWidget;
+  QVBoxLayout *mainLayout = new QVBoxLayout;
+  SphereEdit *sphereEdit = new SphereEdit;
 
-    MyViewer * viewer = new MyViewer;
+  mainWidget->setLayout(mainLayout);
 
-    QMainWindow * mainWindow = new QMainWindow;
-    QToolBar * toolBar = new QToolBar;
-    toolBar->setIconSize(QSize(35,35));
-    toolBar->setAutoFillBackground(true);
-    toolBar->setStyleSheet("QToolBar { background: white; }");
-    viewer->add_actions_to_toolBar(toolBar);
+  QToolBar *toolBar = new QToolBar;
+  toolBar->setIconSize(QSize(35, 35));
+  toolBar->setAutoFillBackground(true);
+  toolBar->setStyleSheet("QToolBar { background: white; }");
+  viewer->add_actions_to_toolBar(toolBar);
 
-    mainWindow->addToolBar(toolBar);
+  mainLayout->addWidget(viewer);
+  mainLayout->addWidget(sphereEdit);
+  mainWindow->addToolBar(toolBar);
+  mainWindow->setCentralWidget(mainWidget);
+  mainWindow->resize(600, 525);
 
-    mainWindow->setCentralWidget(viewer);
+  //---------------TEST ZONE--------------
+  Skeleton sq(Sphere(point3d(1, 2, 3), 1.2));
 
-    QObject::connect( viewer , SIGNAL(windowTitleUpdated(QString)) , mainWindow , SLOT(setWindowTitle(QString)) );
-    viewer->updateTitle("myProject");
+  auto lambda = [&](const Sphere &sphere) -> void {
+    sq.getRoot()->addChild(sphere);
+    viewer->update();
+  };
 
-    mainWindow->setWindowIcon(QIcon("img/icons/icon.png"));
-    mainWindow->show();
+  QObject::connect(sphereEdit, &SphereEdit::addNewSphere, lambda);
+  //-------------------------------------
 
-    return app.exec();
+  QObject::connect(viewer, SIGNAL(windowTitleUpdated(QString)), mainWindow,
+                   SLOT(setWindowTitle(QString)));
+  viewer->updateTitle("myProject");
+
+  mainWindow->setWindowIcon(QIcon("img/icons/icon.png"));
+  mainWindow->show();
+
+  return app.exec();
 }
