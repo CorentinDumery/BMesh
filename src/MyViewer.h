@@ -175,6 +175,9 @@ public:
   }
 
   void keyPressEvent(QKeyEvent *event) override {
+    if (event->key() == Qt::Key_I) {
+      squeleton.interpolate();
+    }
     if (event->key() == Qt::Key_H) {
       help();
     } else if (event->key() == Qt::Key_T) {
