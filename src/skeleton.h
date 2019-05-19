@@ -11,6 +11,7 @@ public:
 
   Node<Sphere> *getRoot() const { return root; }
   void draw() const;
+  void interpolate(bool constantDistance = false, int spheresPerEdge = 1, float spheresPerUnit = 1);
 
 private:
   Node<Sphere> *root;
