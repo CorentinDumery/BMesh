@@ -78,3 +78,62 @@ void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
   }
   cout << "Interpolation added " << newspheres << " new sphere(s)." << endl;
 }
+
+void Skeleton::sweeping() {
+
+  point3d p1 = root->getValue().center;
+  double r1 = root->getValue().radius;
+  for (auto child : root->getChildren()) {
+    point3d p2 = child->getValue().center;
+    double r2 = child->getValue().radius;
+    point3d boneVector = p2 - p1;
+    point3d x = boneVector; // first axis parallel to the bone
+    point3d y, z;
+    if (fabs(x.x()) > 0.01 || fabs(x.y()) > 0.01) {
+      y = point3<float>::cross(x, point3d(0, 0, 1));
+    } else { // then x=(0,0,1)
+      y = point3d(0, 1, 0);
+    }
+    z = point3<float>::cross(x, y);
+    x.normalize();
+    y.normalize();
+    z.normalize();
+    point3d a = p1+r1*y+r1*z;
+    point3d b = p1-r1*y+r1*z;
+    point3d c = p1-r1*y-r1*z;
+    point3d d = p1+r1*y-r1*z;
+
+    point3d ap = p2+r2*y+r2*z;
+    point3d bp = p2-r2*y+r2*z;
+    point3d cp = p2-r2*y-r2*z;
+    point3d dp = p2+r2*y-r2*z;
+
+
+    hull.push_back(Quadrangle(a,b,c,d));
+    hull.push_back(Quadrangle(ap,bp,cp,dp));
+    hull.push_back(Quadrangle(a,ap,bp,b));
+    hull.push_back(Quadrangle(b,bp,cp,c));
+    hull.push_back(Quadrangle(c,cp,dp,d));
+    hull.push_back(Quadrangle(d,dp,ap,a));
+  }
+  hullCalculated = true;
+}
+
+void Skeleton::drawHull() {
+  if (hullCalculated) {
+    glBegin(GL_QUADS);
+    for (unsigned int t = 0; t < hull.size(); ++t) {
+      point3d const &p0 = hull[t].a;
+      point3d const &p1 = hull[t].b;
+      point3d const &p2 = hull[t].c;
+      point3d const &p3 = hull[t].d;
+      point3d const &n = point3d::cross(p1 - p0, p2 - p0).direction();
+      glNormal3f(n[0], n[1], n[2]);
+      glVertex3f(p0[0], p0[1], p0[2]);
+      glVertex3f(p1[0], p1[1], p1[2]);
+      glVertex3f(p2[0], p2[1], p2[2]);
+      glVertex3f(p3[0], p3[1], p3[2]);
+    }
+    glEnd();
+  }
+}
