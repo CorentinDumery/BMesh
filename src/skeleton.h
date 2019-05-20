@@ -3,6 +3,7 @@
 
 #include "Mesh.h"
 #include "node.h"
+#include <vector>
 
 class Skeleton {
 public:
@@ -16,11 +17,16 @@ public:
                    float spheresPerUnit = 1);
   Node *find(const uint selectedId) const;
 
+  void clearHull() { hull.clear(); }
+  void drawHull();
+
 private:
   void draw(Node *node, const uint selectedId,
             const bool withName = false) const;
   Node *find(Node *node, const uint selectedId) const;
   Node *root;
+  vector<Quadrangle> hull;
+  bool hullCalculated=false;
 };
 
 #endif // SQUELETON_H

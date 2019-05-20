@@ -108,4 +108,15 @@ public:
   }
 };
 
+
+class Quadrangle {
+public:
+    point3d a;
+    point3d b;
+    point3d c;
+    point3d d;
+    Quadrangle(point3d a,point3d b,point3d c,point3d d)
+        : a(a), b(b),c(c),d(d) {}
+};
+
 #endif // PROJECTMESH_H
