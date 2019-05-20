@@ -1,8 +1,8 @@
 
 #include "MyViewer.h"
 #include "node.h"
-#include "sphereedit.h"
 #include "skeleton.h"
+#include "sphereedit.h"
 #include <QApplication>
 #include <QMainWindow>
 #include <QToolBar>
@@ -31,16 +31,9 @@ int main(int argc, char **argv) {
   mainWindow->setCentralWidget(mainWidget);
   mainWindow->resize(600, 525);
 
-  //---------------TEST ZONE--------------
-  Skeleton sq(Sphere(point3d(1, 2, 3), 1.2));
-
-  auto lambda = [&](const Sphere &sphere) -> void {
-    sq.getRoot()->addChild(sphere);
-    viewer->update();
-  };
-
-  QObject::connect(sphereEdit, &SphereEdit::addNewSphere, lambda);
-  //-------------------------------------
+  // Connect ui sphere editing to the skeleton
+  QObject::connect(sphereEdit, &SphereEdit::addNewSphere, viewer,
+                   &MyViewer::addSphereToSkeleton);
 
   QObject::connect(viewer, SIGNAL(windowTitleUpdated(QString)), mainWindow,
                    SLOT(setWindowTitle(QString)));

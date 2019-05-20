@@ -33,7 +33,7 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   Q_OBJECT
 
   Mesh mesh;
-  Skeleton squeleton;
+  Skeleton skeleton;
 
   QWidget *controls;
 
@@ -91,12 +91,7 @@ public:
     //    glEnd();
     // ---- draw mesh -----
 
-    squeleton.draw();
-
-    glBegin(GL_LINES);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 6.0f, 0.0f);
-    glEnd();
+    skeleton.draw();
   }
 
   void pickBackgroundColor() {
@@ -150,8 +145,10 @@ public:
   QString helpString() const {
     QString text("<h2>Our BMesh Implementation</h2>");
     text += "<p>";
-    text += "This is a research application. It is based on an article by Zhongping Ji, Ligang Liu and ";
-    text += "Yigang Wang called \"B-Mesh: A Fast Modeling System for Base Meshes of 3D Articulated Shapes\".";
+    text += "This is a research application. It is based on an article by "
+            "Zhongping Ji, Ligang Liu and ";
+    text += "Yigang Wang called \"B-Mesh: A Fast Modeling System for Base "
+            "Meshes of 3D Articulated Shapes\".";
     text += "<h3>Participants</h3>";
     text += "<ul>";
     text += "<li>Timothee Chauvin</li>";
@@ -176,7 +173,8 @@ public:
 
   void keyPressEvent(QKeyEvent *event) override {
     if (event->key() == Qt::Key_I) {
-      squeleton.interpolate();
+      skeleton.interpolate();
+      update();
     }
     if (event->key() == Qt::Key_H) {
       help();
@@ -223,6 +221,11 @@ signals:
   void windowTitleUpdated(const QString &);
 
 public slots:
+  void addSphereToSkeleton(const Sphere &sphere) {
+    skeleton.getRoot()->addChild(sphere);
+    update();
+  }
+
   void open_mesh() {
     bool success = false;
     QString fileName = QFileDialog::getOpenFileName(nullptr, "", "");
