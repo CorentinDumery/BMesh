@@ -1,4 +1,3 @@
-
 #include "MyViewer.h"
 #include "node.h"
 #include "skeleton.h"
@@ -6,6 +5,9 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QToolBar>
+
+uint Shape::idsCounter = 0;
+std::queue<uint> Shape::avaibleIds;
 
 int main(int argc, char **argv) {
   QApplication app(argc, argv);

@@ -11,6 +11,9 @@ public:
   Node();
   Node(T value) : value(value) {}
   ~Node() {
+    // TODO : This is not something we really want, specialy when we want to
+    // remove one specific node (let's see when it will be implemented). Don't
+    // forget to adapt descructor skeleton tree in consequence.
     for (auto node : children)
       delete node;
 
