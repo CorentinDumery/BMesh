@@ -26,9 +26,8 @@ rm -rf gsl-2.5.tar.gz gsl-2.5
 wget http://www.libqglviewer.com/src/libQGLViewer-2.7.1.tar.gz
 tar -xzf libQGLViewer-2.7.1.tar.gz
 cd libQGLViewer-2.7.1/QGLViewer
-qmake -qt5
+qmake
 make
-make install
 cd ../..
 rm -rf libQGLViewer-2.7.1.tar.gz
 
