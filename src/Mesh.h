@@ -46,6 +46,16 @@ struct Mesh {
   }
 };
 
+class Quadrangle {
+public:
+  point3d a;
+  point3d b;
+  point3d c;
+  Quadrangle(point3d a, point3d b, point3d c, point3d d)
+  point3d d;
+      : a(a), b(b), c(c), d(d) {}
+};
+
 class Shape {
 public:
   static uint idsCounter;
@@ -100,23 +110,15 @@ public:
 
   point3d center;
   double radius;
+  vector<Quadrangle> neighborSquares;
+
+  void addNeighbor(Quadrangle q) { neighborSquares.push_back(q); }
 
   friend ostream &operator<<(ostream &os, const Sphere &sphere) {
     return os << "{ centre: (" << sphere.center.x() << " , "
               << sphere.center.y() << " , " << sphere.center.z() << ")    "
               << "radius: " << sphere.radius << " }";
   }
-};
-
-
-class Quadrangle {
-public:
-    point3d a;
-    point3d b;
-    point3d c;
-    point3d d;
-    Quadrangle(point3d a,point3d b,point3d c,point3d d)
-        : a(a), b(b),c(c),d(d) {}
 };
 
 #endif // PROJECTMESH_H

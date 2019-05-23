@@ -17,16 +17,23 @@ public:
                    float spheresPerUnit = 1);
   Node *find(const uint selectedId) const;
 
-  void clearHull() { hull.clear(); }
+  void clearHull() {
+    hull.clear();
+    hullCalculated = false;
+  }
   void drawHull();
+  void drawInterpolation() const;
 
 private:
   void draw(Node *node, const uint selectedId,
             const bool withName = false) const;
   Node *find(Node *node, const uint selectedId) const;
   Node *root;
+  void interpolate(Node<Sphere> *node, bool constantDistance = true,
+                   int spheresPerEdge = 1, float spheresPerUnit = 1);
+  vector<Sphere> interSpheres;
   vector<Quadrangle> hull;
-  bool hullCalculated=false;
+  bool hullCalculated = false;
 };
 
 #endif // SQUELETON_H
