@@ -2,9 +2,14 @@
 
 Skeleton::Skeleton(Sphere *sphere) : root(new Node(sphere)) {
   // TODO: attention hardoceded
-  root->addChild(new Sphere(point3d(0, 6, 0), 1));
-  root->getChildren()[0]->addChild(new Sphere(point3d(3, 6, 0), 1.5));
-  root->getChildren()[0]->addChild(new Sphere(point3d(-3, 6, 0), 1.5));
+  root->addChild(Sphere(point3d(0, -2, -2), 0.75));
+  root->addChild(Sphere(point3d(0, -2, 2), 0.75));
+  root->getChildren()[0]->addChild(Sphere(point3d(0, -6, -2), 0.5));
+  root->getChildren()[1]->addChild(Sphere(point3d(0, -6, +2), 0.5));
+  root->addChild(Sphere(point3d(0, 4, 0), 1));
+  root->getChildren()[2]->addChild(Sphere(point3d(0, 7, 0), 0.75));
+  root->getChildren()[2]->addChild(Sphere(point3d(2, 6, -4), 0.5));
+  root->getChildren()[2]->addChild(Sphere(point3d(2, 6, +4), 0.5));
 }
 
 Skeleton::~Skeleton() { delete root; }
@@ -32,6 +37,11 @@ void Skeleton::draw(Node *node, const uint selectedId,
   }
 }
 
+void Skeleton::drawInterpolation() const {
+  for (auto sphere : interSpheres)
+    sphere.draw();
+}
+
 Node *Skeleton::find(const uint selectedId) const {
   return find(root, selectedId);
 }
@@ -48,7 +58,12 @@ Node *Skeleton::find(Node *node, const uint selectedId) const {
 
 void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
                            float spheresPerUnit) {
-  // TODO: not only root's children
+  interSpheres.clear();
+  interpolate(getRoot(), constantDistance, spheresPerEdge, spheresPerUnit);
+}
+
+void Skeleton::interpolate(Node<Sphere> *node, bool constantDistance,
+                           int spheresPerEdge, float spheresPerUnit) {
 
   // When it comes to interpolation, we have different options.
   //  1) Constant number of new spheres between every linked spheres
@@ -68,22 +83,34 @@ void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
     for (int i = 1; i < spheresToAdd + 1; i++) {
       float lambda = (float)i / (spheresToAdd + 1);
       point3d newp = lambda * p1 + (1 - lambda) * p2;
-      double newr = lambda * root->getValue()->radius +
-                    (1 - lambda) * child->getValue()->radius;
       // TODO : When the interpolate spheres won't be a node make sure to delete
       // it to avoid memory leak
-      root->addChild(new Sphere(newp, newr));
+      double newr = lambda * root->getValue()->radius +
+                    (1 - lambda) * child->getValue()->radius;
+      interSpheres.push_back(Sphere(newp, newr));
       newspheres++;
     }
+
+    interpolate(child, constantDistance, spheresPerEdge, spheresPerUnit);
   }
-  cout << "Interpolation added " << newspheres << " new sphere(s)." << endl;
 }
 
 void Skeleton::sweeping() {
+  interpolate();
+  clearHull();
+  sweeping(root);
+  hullCalculated = true;
+}
 
-  point3d p1 = root->getValue().center;
-  double r1 = root->getValue().radius;
-  for (auto child : root->getChildren()) {
+void Skeleton::sweeping(Node<Sphere> *node) {
+
+  point3d p1 = node->getValue().center;
+  double r1 = node->getValue().radius;
+  int n = 0;
+  int addedSections = 0;
+
+  for (auto child : node->getChildren()) {
+
     point3d p2 = child->getValue().center;
     double r2 = child->getValue().radius;
     point3d boneVector = p2 - p1;
@@ -98,25 +125,36 @@ void Skeleton::sweeping() {
     x.normalize();
     y.normalize();
     z.normalize();
-    point3d a = p1+r1*y+r1*z;
-    point3d b = p1-r1*y+r1*z;
-    point3d c = p1-r1*y-r1*z;
-    point3d d = p1+r1*y-r1*z;
 
-    point3d ap = p2+r2*y+r2*z;
-    point3d bp = p2-r2*y+r2*z;
-    point3d cp = p2-r2*y-r2*z;
-    point3d dp = p2+r2*y-r2*z;
+    point3d a, b, c, d;
 
+    a = p1 + r1 * y + r1 * z + r1 * x;
+    b = p1 - r1 * y + r1 * z + r1 * x;
+    c = p1 - r1 * y - r1 * z + r1 * x;
+    d = p1 + r1 * y - r1 * z + r1 * x;
 
-    hull.push_back(Quadrangle(a,b,c,d));
-    hull.push_back(Quadrangle(ap,bp,cp,dp));
-    hull.push_back(Quadrangle(a,ap,bp,b));
-    hull.push_back(Quadrangle(b,bp,cp,c));
-    hull.push_back(Quadrangle(c,cp,dp,d));
-    hull.push_back(Quadrangle(d,dp,ap,a));
+    point3d ap = p2 + r2 * y + r2 * z - r2 * x;
+    point3d bp = p2 - r2 * y + r2 * z - r2 * x;
+    point3d cp = p2 - r2 * y - r2 * z - r2 * x;
+    point3d dp = p2 + r2 * y - r2 * z - r2 * x;
+
+    // hull.push_back(Quadrangle(a, b, c, d));
+    // hull.push_back(Quadrangle(ap, bp, cp, dp));
+    hull.push_back(Quadrangle(a, ap, bp, b));
+    hull.push_back(Quadrangle(b, bp, cp, c));
+    hull.push_back(Quadrangle(c, cp, dp, d));
+    hull.push_back(Quadrangle(d, dp, ap, a));
+
+    addedSections++;
+    Sphere s1 = node->getValue();
+    s1.addNeighbor(Quadrangle(a, b, c, d));
+    Sphere s2 = child->getValue();
+    s2.neighborSquares.push_back(Quadrangle(ap, bp, cp, dp));
+
+    sweeping(child);
+
+    n++;
   }
-  hullCalculated = true;
 }
 
 void Skeleton::drawHull() {
