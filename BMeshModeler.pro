@@ -17,7 +17,8 @@ HEADERS += ./src/point3.h \
     ./src/gl/BasicColors.h \
     ./src/sphereedit.h \
     src/node.h \
-    src/skeleton.h
+    src/skeleton.h \
+    src/utility.h
 SOURCES += ./src/main.cpp \
     ./src/gl/GLUtilityMethods.cpp\
     ./src/gl/BasicColors.cpp \

@@ -75,10 +75,22 @@ public:
     glEnable(GL_LIGHTING);
     glColor3f(0.5, 0.5, 0.8);
 
-    skeleton.draw();
+    skeleton.draw(selectedName());
 
     // TODO: add a Mesh mode
     // mesh.draw();
+  }
+
+  void drawWithNames() override { skeleton.drawWithNames(); }
+
+  void postSelection(const QPoint &point) override {
+    if (selectedName() == -1) {
+      cout << "NO SELECTION" << endl;
+    } else {
+      cout << "SELECTED ELEMENT : " << selectedName()
+           << ", selected under pixel (" << point.x() << "," << point.y() << ")"
+           << endl;
+    }
   }
 
   void pickBackgroundColor() {
