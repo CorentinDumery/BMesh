@@ -9,15 +9,25 @@ Skeleton::Skeleton(const Sphere &sphere) : root(new Node<Sphere>(sphere)) {
 
 Skeleton::~Skeleton() { delete root; }
 
-void Skeleton::draw() const { draw(root); }
+void Skeleton::draw(const uint selectedId) const { draw(root, selectedId); }
 
-void Skeleton::draw(Node<Sphere> *node) const {
+void Skeleton::drawWithNames() const {
+  // The selected id is 0, because drawing with names don't care about the color.
+  draw(root, 0, true);
+}
+
+void Skeleton::draw(Node<Sphere> *node, const uint selectedId,
+                    const bool withName) const {
   const Sphere *sphere = &node->getValue();
-  sphere->draw();
+
+  if (withName) {
+    sphere->drawWithName();
+  } else
+    sphere->draw(selectedId == sphere->getId());
   for (auto child : node->getChildren()) {
     // Draw the bone
     BasicGL::drawLine(sphere->center, child->getValue().center);
-    draw(child);
+    draw(child, selectedId, withName);
   }
 }
 

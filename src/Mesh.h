@@ -2,6 +2,7 @@
 #define PROJECTMESH_H
 
 #include "point3.h"
+#include "utility.h"
 #include <gl/GLUtilityMethods.h>
 #include <queue>
 #include <vector>
@@ -58,13 +59,23 @@ public:
       avaibleIds.pop();
     }
   }
+
+  void draw(const bool selected = false) const {
+    if (selected)
+      setSelectedColor();
+    else
+      setDefaultColor();
+  }
+
   Shape(const Shape &) : Shape() {}
   uint getId() const { return id; }
   ~Shape() { avaibleIds.push(id); }
 
+protected:
+  uint id;
+
 private:
   static queue<uint> avaibleIds;
-  uint id;
 };
 
 class Sphere : public Shape {
@@ -72,11 +83,19 @@ public:
   Sphere(point3d center = point3d(0, 0, 0), double radius = 1.0)
       : center(center), radius(radius) {}
 
-  void draw() const {
+  void draw(const bool selected = false) const {
+    Shape::draw(selected);
+
     // TODO: aptimal slice, what is exactly ?
     BasicGL::drawSphere(center.x(), center.y(), center.z(), radius,
                         BasicGL::optimalSlices(radius, 0.5f),
                         BasicGL::optimalStacks(radius, 0.5f));
+  }
+
+  void drawWithName() const {
+    glPushName(id);
+    draw();
+    glPopName();
   }
 
   point3d center;
