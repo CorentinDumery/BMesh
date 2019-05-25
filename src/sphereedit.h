@@ -22,7 +22,7 @@ private slots:
   void handleAddButton() const;
 
 signals:
-  void addNewSphere(const Sphere &sphere) const;
+  void addNewSphere(Sphere *sphere) const;
 };
 
 #endif // SPHEREEDIT_H

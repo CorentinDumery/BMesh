@@ -220,7 +220,7 @@ signals:
   void windowTitleUpdated(const QString &);
 
 public slots:
-  void addSphereToSkeleton(const Sphere &sphere) {
+  void addSphereToSkeleton(Sphere *sphere) {
     skeleton.getRoot()->addChild(sphere);
     update();
   }

@@ -25,5 +25,7 @@ void SphereEdit::handleAddButton() const {
   double radius = ui->radiusEditLine->text().toDouble();
   // TODO : add validation
 
-  emit addNewSphere(Sphere(point3d(x, y, z), radius));
+  Sphere* sphere = new Sphere(point3d(x, y, z), radius);
+
+  emit addNewSphere(sphere);
 }
