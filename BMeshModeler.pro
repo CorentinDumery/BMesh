@@ -23,7 +23,8 @@ SOURCES += ./src/main.cpp \
     ./src/gl/GLUtilityMethods.cpp\
     ./src/gl/BasicColors.cpp \
     ./src/sphereedit.cpp \
-    src/skeleton.cpp
+    src/skeleton.cpp \
+    src/MyViewer.cpp
 
 #QGLViewer
 {
