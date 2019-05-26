@@ -14,18 +14,52 @@ SphereEdit::SphereEdit(QWidget *parent)
   ui->radiusEditLine->setValidator(validator);
 
   connect(ui->addButton, SIGNAL(released()), this, SLOT(handleAddButton()));
+  connect(ui->editButton, SIGNAL(released()), this, SLOT(handleEditButton()));
 }
 
 SphereEdit::~SphereEdit() { delete ui; }
 
-void SphereEdit::handleAddButton() const {
+point3d SphereEdit::getPoint3d() const {
+  // TODO : add validation
   double x = ui->xEditLine->text().toDouble();
   double y = ui->yEditLine->text().toDouble();
   double z = ui->zEditLine->text().toDouble();
-  double radius = ui->radiusEditLine->text().toDouble();
+  return point3d(x, y, z);
+}
+
+double SphereEdit::getRadius() const {
   // TODO : add validation
+  return ui->radiusEditLine->text().toDouble();
+}
 
-  Sphere* sphere = new Sphere(point3d(x, y, z), radius);
+void SphereEdit::handleAddButton() const {
+  Sphere *sphere = new Sphere(getPoint3d(), getRadius());
+  node->addChild(sphere);
+}
 
-  emit addNewSphere(sphere);
+void SphereEdit::handleEditButton() const {
+  node->editSphere(getPoint3d(), getRadius());
+}
+
+void SphereEdit::updateSelection(Node *node) {
+  // No selected sphere
+  if (node == nullptr) {
+    ui->editButton->setEnabled(false);
+    ui->addButton->setEnabled(false);
+    ui->xEditLine->clear();
+    ui->yEditLine->clear();
+    ui->zEditLine->clear();
+    ui->radiusEditLine->clear();
+    return;
+  }
+
+  // A sphere is selected
+  const Sphere *sphere = node->getValue();
+  this->node = node;
+  ui->editButton->setEnabled(true);
+  ui->addButton->setEnabled(true);
+  ui->xEditLine->setText(QString::number(sphere->center.x()));
+  ui->yEditLine->setText(QString::number(sphere->center.y()));
+  ui->zEditLine->setText(QString::number(sphere->center.z()));
+  ui->radiusEditLine->setText(QString::number(sphere->radius));
 }

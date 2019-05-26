@@ -32,6 +32,20 @@ void Skeleton::draw(Node *node, const uint selectedId,
   }
 }
 
+Node *Skeleton::find(const uint selectedId) const {
+  return find(root, selectedId);
+}
+
+Node *Skeleton::find(Node *node, const uint selectedId) const {
+  if (node->getValue()->getId() == selectedId)
+    return node;
+  for (auto child : node->getChildren()) {
+    Node *tempNode = find(child, selectedId);
+    if (tempNode->getValue()->getId() == selectedId)
+      return tempNode;
+  }
+}
+
 void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
                            float spheresPerUnit) {
   // TODO: not only root's children

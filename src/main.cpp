@@ -33,9 +33,9 @@ int main(int argc, char **argv) {
   mainWindow->setCentralWidget(mainWidget);
   mainWindow->resize(600, 525);
 
-  // Connect ui sphere editing to the skeleton
-  QObject::connect(sphereEdit, &SphereEdit::addNewSphere, viewer,
-                   &MyViewer::addSphereToSkeleton);
+  // Connect viewer slection to ui sphere editing
+  QObject::connect(viewer, &MyViewer::nodeSelected, sphereEdit,
+                   &SphereEdit::updateSelection);
 
   QObject::connect(viewer, SIGNAL(windowTitleUpdated(QString)), mainWindow,
                    SLOT(setWindowTitle(QString)));

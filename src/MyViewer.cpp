@@ -43,10 +43,13 @@ void MyViewer::draw() {
 void MyViewer::postSelection(const QPoint &point) {
   if (selectedName() == -1) {
     cout << "NO SELECTION" << endl;
+    emit(nodeSelected(nullptr));
   } else {
     cout << "SELECTED ELEMENT : " << selectedName()
          << ", selected under pixel (" << point.x() << "," << point.y() << ")"
          << endl;
+    Node *node = skeleton.find(selectedName());
+    emit(nodeSelected(node));
   }
 }
 

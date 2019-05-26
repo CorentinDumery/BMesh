@@ -72,6 +72,13 @@ public:
     }
 
     // You cannot template over anything here, but maybe you could template over typename T2 for operator += (const point3< T2 > & other)
+    void operator = (const point3< T > & other)
+    {
+        v[0] = other.x();
+        v[1] = other.y();
+        v[2] = other.z();
+    }
+
     void operator += (const point3< T > & other)
     {
         v[0] += other.x();

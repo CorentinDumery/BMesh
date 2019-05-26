@@ -2,6 +2,7 @@
 #define SPHEREEDIT_H
 
 #include "Mesh.h"
+#include "node.h"
 #include <QWidget>
 
 namespace Ui {
@@ -17,12 +18,16 @@ public:
 
 private:
   Ui::SphereEdit *ui;
+  Node *node = nullptr;
+  point3d getPoint3d() const;
+  double getRadius() const;
 
 private slots:
   void handleAddButton() const;
+  void handleEditButton() const;
 
-signals:
-  void addNewSphere(Sphere *sphere) const;
+public slots:
+  void updateSelection(Node *node);
 };
 
 #endif // SPHEREEDIT_H

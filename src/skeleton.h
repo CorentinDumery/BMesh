@@ -14,10 +14,12 @@ public:
   void drawWithNames() const;
   void interpolate(bool constantDistance = false, int spheresPerEdge = 1,
                    float spheresPerUnit = 1);
+  Node *find(const uint selectedId) const;
 
 private:
   void draw(Node *node, const uint selectedId,
             const bool withName = false) const;
+  Node *find(Node *node, const uint selectedId) const;
   Node *root;
 };
 
