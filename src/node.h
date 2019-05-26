@@ -30,6 +30,10 @@ public:
   bool isLeaf() const { return children.empty(); }
   const Sphere *getValue() const { return sphere; }
   const vector<Node *> &getChildren() const { return children; }
+  void editSphere(point3d center, double radius) {
+    sphere->center = center;
+    sphere->radius = radius;
+  };
 
 private:
   Sphere *sphere;
