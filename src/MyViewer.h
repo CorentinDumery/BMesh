@@ -55,7 +55,7 @@ public:
 
   void init() override;
 
-  QString helpString() const;
+  QString helpString() const override;
 
   void updateTitle(QString text) {
     this->setWindowTitle(text);
