@@ -1,4 +1,6 @@
 #include "skeleton.h"
+#define QUICKHULL_IMPLEMENTATION
+#include "quickhull.h" //implementation of quick hull
 
 Skeleton::Skeleton(Sphere *sphere) : root(new Node(sphere)) {
   // TODO: attention hardoceded
@@ -58,17 +60,18 @@ Node *Skeleton::find(Node *node, const uint selectedId) const {
 
 void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
                            float spheresPerUnit) {
+
+  // When it comes to interpolation, we have different options.
+  //  1) Constant number of new spheres between every linked spheres
+  //  2) Constant number of new spheres on a given distance, i.e. number
+  //     based on the distance between two given spheres
+
   interSpheres.clear();
   interpolate(getRoot(), constantDistance, spheresPerEdge, spheresPerUnit);
 }
 
 void Skeleton::interpolate(Node<Sphere> *node, bool constantDistance,
                            int spheresPerEdge, float spheresPerUnit) {
-
-  // When it comes to interpolation, we have different options.
-  //  1) Constant number of new spheres between every linked spheres
-  //  2) Constant number of new spheres on a given distance, i.e. number
-  //     based on the distance between two given spheres
 
   int newspheres = 0;
   point3d p1 = root->getValue()->center;
@@ -90,70 +93,7 @@ void Skeleton::interpolate(Node<Sphere> *node, bool constantDistance,
       interSpheres.push_back(Sphere(newp, newr));
       newspheres++;
     }
-
     interpolate(child, constantDistance, spheresPerEdge, spheresPerUnit);
-  }
-}
-
-void Skeleton::sweeping() {
-  interpolate();
-  clearHull();
-  sweeping(root);
-  hullCalculated = true;
-}
-
-void Skeleton::sweeping(Node<Sphere> *node) {
-
-  point3d p1 = node->getValue().center;
-  double r1 = node->getValue().radius;
-  int n = 0;
-  int addedSections = 0;
-
-  for (auto child : node->getChildren()) {
-
-    point3d p2 = child->getValue().center;
-    double r2 = child->getValue().radius;
-    point3d boneVector = p2 - p1;
-    point3d x = boneVector; // first axis parallel to the bone
-    point3d y, z;
-    if (fabs(x.x()) > 0.01 || fabs(x.y()) > 0.01) {
-      y = point3<float>::cross(x, point3d(0, 0, 1));
-    } else { // then x=(0,0,1)
-      y = point3d(0, 1, 0);
-    }
-    z = point3<float>::cross(x, y);
-    x.normalize();
-    y.normalize();
-    z.normalize();
-
-    point3d a, b, c, d;
-
-    a = p1 + r1 * y + r1 * z + r1 * x;
-    b = p1 - r1 * y + r1 * z + r1 * x;
-    c = p1 - r1 * y - r1 * z + r1 * x;
-    d = p1 + r1 * y - r1 * z + r1 * x;
-
-    point3d ap = p2 + r2 * y + r2 * z - r2 * x;
-    point3d bp = p2 - r2 * y + r2 * z - r2 * x;
-    point3d cp = p2 - r2 * y - r2 * z - r2 * x;
-    point3d dp = p2 + r2 * y - r2 * z - r2 * x;
-
-    // hull.push_back(Quadrangle(a, b, c, d));
-    // hull.push_back(Quadrangle(ap, bp, cp, dp));
-    hull.push_back(Quadrangle(a, ap, bp, b));
-    hull.push_back(Quadrangle(b, bp, cp, c));
-    hull.push_back(Quadrangle(c, cp, dp, d));
-    hull.push_back(Quadrangle(d, dp, ap, a));
-
-    addedSections++;
-    Sphere s1 = node->getValue();
-    s1.addNeighbor(Quadrangle(a, b, c, d));
-    Sphere s2 = child->getValue();
-    s2.neighborSquares.push_back(Quadrangle(ap, bp, cp, dp));
-
-    sweeping(child);
-
-    n++;
   }
 }
 
@@ -175,3 +115,236 @@ void Skeleton::drawHull() {
     glEnd();
   }
 }
+
+void Skeleton::stitching() {
+  clearHull();
+  point3d a = point3d(0, 0, 0);
+  stitching(root, Quadrangle(a, a, a, a), true);
+  // cout<< hull.size()<<endl;
+  // for (auto h : hull) cout << h.a<<" "<< h.b<<" "<< h.c<<" "<< h.d<< endl;
+  hullCalculated = true;
+}
+
+void Skeleton::stitching(Node<Sphere> *node, Quadrangle motherQuad,
+                         bool isRoot) {
+  // Objective : complete the hull.
+  //  If there is only one neighboring square, just build a cube around the
+  //  sphere.
+  //  If there are at least two, try to stitch them
+
+  // TODO find a way to deal with quads that are too close to the sphere
+
+  // TODO get rid of neighborSquares ?
+
+  // On parcours l'arbre, et chaque fils ajoute le hull entre lui et sa mère.
+  // La mère doit quand même add le hull autour de sa propre sphère
+
+  double safetyFactor =
+      0.8; // this makes the squares around joint nodes smaller so as to ensure
+           // the hull computation is stable
+  // typically safetyFactor should be between 0.5 and 1, but other values give
+  // fun results.
+
+  Sphere sphere = node->getValue();
+
+  double r = sphere.radius;
+  // Quadrangle facingMom = Quadrangle(point3d(0, 0, 0), point3d(0, 0, 0),
+  //                                  point3d(0, 0, 0), point3d(0, 0, 0));
+
+  vector<Quadrangle> facingSons;
+  // Convention : facingSons[0] représente celui vers la mère
+  // Si c'est la root, c'est quelconque.
+  if (isRoot)
+    facingSons.push_back(Quadrangle(point3d(0, 0, 0), point3d(0, 0, 0),
+                                    point3d(0, 0, 0), point3d(0, 0, 0)));
+
+  vector<point3d> directions; // directions towards neighboring spheres
+  if (!isRoot) {
+    point3d motherPosition =
+        (motherQuad.a + motherQuad.b + motherQuad.c + motherQuad.d) / 4;
+    point3d vec = motherPosition - sphere.center;
+    vec.normalize();
+    directions.push_back(vec);
+  }
+
+  for (auto child : node->getChildren()) {
+    point3d vec = child->getValue().center - sphere.center;
+    vec.normalize();
+    directions.push_back(vec);
+  }
+
+  if (directions.size() == 0) {
+    cout << "Stitching failed : a sphere has no neighboring sphere." << endl;
+  }
+
+  if (directions.size() == 1) {
+
+    // Quadrangle quad = sphere.neighborSquares[0];
+    point3d x = directions[0];
+
+    point3d y, z;
+
+    if (!isRoot) { // try to use the same directions as mother for a better edge
+                   // flow
+      y = motherQuad.a - motherQuad.d;
+      z = motherQuad.a - motherQuad.b;
+    } else if (fabs(x.x()) > 0.01 ||
+               fabs(x.y()) > 0.01) { // not colinear to 0,0,1
+      y = point3<float>::cross(x, point3d(0, 0, 1));
+      z = point3<float>::cross(x, y);
+    } else {
+      y = point3<float>::cross(x, point3d(0, 1, 0));
+      z = point3<float>::cross(x, y);
+    }
+    x.normalize();
+    y.normalize();
+    z.normalize();
+
+    point3d a, b, c, d;     // quadrangle facing the other sphere
+    point3d ap, bp, cp, dp; // quadrangle opposite to it
+    a = sphere.center + x * r + y * r + z * r;
+    b = sphere.center + x * r + y * r - z * r;
+    c = sphere.center + x * r - y * r - z * r;
+    d = sphere.center + x * r - y * r + z * r;
+    ap = a - 2 * x * r;
+    bp = b - 2 * x * r;
+    cp = c - 2 * x * r;
+    dp = d - 2 * x * r;
+
+    hull.push_back(Quadrangle(dp, cp, bp, ap));
+    hull.push_back(Quadrangle(a, ap, bp, b));
+    hull.push_back(Quadrangle(b, bp, cp, c));
+    hull.push_back(Quadrangle(c, cp, dp, d));
+    hull.push_back(Quadrangle(d, dp, ap, a));
+    // facingMom = Quadrangle(a, b, c, d);
+    facingSons.push_back(Quadrangle(a, b, c, d));
+  }
+
+  else { // multiple directions to consider
+
+    // Let's find the minimum angle between two directions
+    double theta = 360;
+    for (int i = 0; i < directions.size(); i++) {
+      for (int j = i + 1; j < directions.size(); j++) {
+        double angle = acos(point3d::dot(directions[i], directions[j]) /
+                            (directions[i].norm() * directions[j].norm()));
+        if (angle < theta)
+          theta = angle;
+      }
+    }
+    double maxSize = r * sin(theta / 2) *
+                     safetyFactor; // size allowed for a neighboring square
+    vector<point3d> points;
+
+    for (int i = 0; i < directions.size(); i++) {
+      point3d milieu = sphere.center + directions[i] * sphere.radius;
+      point3d a, b, c, d, x, y, z;
+      x = directions[i];
+      if (!isRoot && i == 0) {
+        y = motherQuad.a - motherQuad.d;
+        z = motherQuad.a - motherQuad.b;
+      } else if (fabs(x.x()) > 0.01 ||
+                 fabs(x.y()) > 0.01) { // not colinear to 0,0,1
+        y = point3<float>::cross(x, point3d(0, 0, 1));
+        z = point3<float>::cross(x, y);
+      } else {
+        y = point3<float>::cross(x, point3d(0, 1, 0));
+        z = point3<float>::cross(x, y);
+      }
+      x.normalize();
+      y.normalize();
+      z.normalize();
+
+      a = milieu + z * maxSize + y * maxSize;
+      b = milieu - z * maxSize + y * maxSize;
+      c = milieu - z * maxSize - y * maxSize;
+      d = milieu + z * maxSize - y * maxSize;
+
+      if (!isRoot && i == 0) { // this one is facing the mother
+        facingSons.push_back(Quadrangle(a, b, c, d));
+
+      } else { // facing a child
+        facingSons.push_back(Quadrangle(a, b, c, d));
+      }
+
+      // TODO dont draw useless faces that correspond to facingSons
+      points.push_back(a);
+      points.push_back(b);
+      points.push_back(c);
+      points.push_back(d);
+    }
+    vector<Triplet> tri = convexHull(points);
+    for (int i = 0; i < tri.size(); i++) {
+      hull.push_back(Quadrangle(tri[i].a, tri[i].b, tri[i].c, tri[i].a));
+      // TODO merge triangles instead of displaying them as quadrangles
+    }
+  }
+
+  if (!isRoot) {            // dessiner le hull entre lui et sa mère
+    point3d a, b, c, d;     // quadrangle facing the other sphere
+    point3d ap, bp, cp, dp; // quadrangle opposite to it
+    Quadrangle facingMom = facingSons[0];
+    a = facingMom.a;
+    b = facingMom.b;
+    c = facingMom.c;
+    d = facingMom.d;
+    ap = motherQuad.a;
+    bp = motherQuad.b;
+    cp = motherQuad.c;
+    dp = motherQuad.d;
+    hull.push_back(Quadrangle(ap, a, b, bp));
+    hull.push_back(Quadrangle(bp, b, c, cp));
+    hull.push_back(Quadrangle(cp, c, d, dp));
+    hull.push_back(Quadrangle(dp, d, a, ap));
+  }
+
+  int n = 1;
+  for (auto child : node->getChildren()) {
+    stitching(child, facingSons[n]);
+    n++;
+  }
+}
+
+vector<Triplet> Skeleton::convexHull(vector<point3d> points) {
+
+  const int n = points.size();
+  qh_vertex_t vertices[n];
+  vector<Triplet> output;
+
+  for (int i = 0; i < n; ++i) {
+    vertices[i].z = points[i].z();
+    vertices[i].x = points[i].x();
+    vertices[i].y = points[i].y();
+  }
+
+  qh_mesh_t mesh = qh_quickhull3d(vertices, n);
+
+  // QuickHull
+  // https://stackoverflow.com/questions/18416861/how-to-find-convex-hull-in-a-3-dimensional-space
+  // First, find 3 extremum.
+  // Add the furthest point from that plane.
+  // Assignment (optional): remove inside points, and assign each left v to
+  // its closest face on the current solution
+  //
+
+  // note : this implementation crashes if "vertices" is n times the same vertex
+
+  for (int i = 0; i < mesh.nindices; i += 3) {
+    point3d a =
+        point3d(mesh.vertices[i].x, mesh.vertices[i].y, mesh.vertices[i].z);
+    point3d b = point3d(mesh.vertices[i + 1].x, mesh.vertices[i + 1].y,
+                        mesh.vertices[i + 1].z);
+    point3d c = point3d(mesh.vertices[i + 2].x, mesh.vertices[i + 2].y,
+                        mesh.vertices[i + 2].z);
+    output.push_back(Triplet(a, b, c));
+  }
+
+  qh_free_mesh(mesh);
+
+  return output;
+}
+
+// merge
+// norme =
+// angles = 90°
+// grande taille

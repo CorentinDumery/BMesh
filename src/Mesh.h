@@ -48,12 +48,15 @@ struct Mesh {
 
 class Quadrangle {
 public:
-  point3d a;
-  point3d b;
-  point3d c;
+  point3d a,b,c,d;
   Quadrangle(point3d a, point3d b, point3d c, point3d d)
-  point3d d;
       : a(a), b(b), c(c), d(d) {}
+};
+class Triplet { //triplet of point3d, 3D triangle
+public:
+  point3d a,b,c;
+  Triplet(point3d a, point3d b, point3d c)
+      : a(a), b(b), c(c) {}
 };
 
 class Shape {
