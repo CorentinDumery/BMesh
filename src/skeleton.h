@@ -28,10 +28,10 @@ public:
   void generateRandom();
   void generateAnimal(int numSph=10);
 
-  vector<Triplet> convexHull(vector<point3d> points);
+  vector<Triangle> convexHull(vector<point3d> points);
 
 private:
-  void stitching(Node *node, Quadriplet motherQuad,
+  void stitching(Node *node, Quadrangle motherQuad,
                  bool isRoot = false);
   void draw(Node *node, const uint selectedId,
             const bool withName = false) const;
@@ -40,9 +40,9 @@ private:
   void interpolate(Node *node, bool constantDistance = true,
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
   vector<Sphere> interSpheres;
-  vector<Quadriplet> hull;
+  vector<Quadrangle> hull;
   bool hullCalculated = false;
-  Mesh toMesh(vector<Quadriplet> hull,float threshhold = 0.001);
+  Mesh toMesh(vector<Quadrangle> hull,float threshhold = 0.001);
 };
 
 #endif // SQUELETON_H
