@@ -35,6 +35,8 @@ void MyViewer::draw() {
   glColor3f(0.5, 0.5, 0.8);
 
   skeleton.draw(selectedName());
+  skeleton.drawHull();
+  skeleton.drawInterpolation();
 
   // TODO: add a Mesh mode
   // mesh.draw();
@@ -126,6 +128,14 @@ QString MyViewer::helpString() const {
 }
 
 void MyViewer::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_A) {
+      skeleton.generateAnimal();
+      update();
+    }
+    if (event->key() == Qt::Key_K) {
+      skeleton.stitching();
+      update();
+    }
   if (event->key() == Qt::Key_I) {
     skeleton.interpolate();
     update();

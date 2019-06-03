@@ -5,14 +5,14 @@
 
 Skeleton::Skeleton(Sphere *sphere) : root(new Node(sphere)) {
   // TODO: attention hardoceded
-  root->addChild(Sphere(point3d(0, -2, -2), 0.75));
-  root->addChild(Sphere(point3d(0, -2, 2), 0.75));
-  root->getChildren()[0]->addChild(Sphere(point3d(0, -6, -2), 0.5));
-  root->getChildren()[1]->addChild(Sphere(point3d(0, -6, +2), 0.5));
-  root->addChild(Sphere(point3d(0, 4, 0), 1));
-  root->getChildren()[2]->addChild(Sphere(point3d(0, 7, 0), 0.75));
-  root->getChildren()[2]->addChild(Sphere(point3d(2, 6, -4), 0.5));
-  root->getChildren()[2]->addChild(Sphere(point3d(2, 6, +4), 0.5));
+  root->addChild(new Sphere(point3d(0, -2, -2), 0.75));
+  root->addChild(new Sphere(point3d(0, -2, 2), 0.75));
+  root->getChildren()[0]->addChild(new Sphere(point3d(0, -6, -2), 0.5));
+  root->getChildren()[1]->addChild(new Sphere(point3d(0, -6, +2), 0.5));
+  root->addChild(new Sphere(point3d(0, 4, 0), 1));
+  root->getChildren()[2]->addChild(new Sphere(point3d(0, 7, 0), 0.75));
+  root->getChildren()[2]->addChild(new Sphere(point3d(2, 6, -4), 0.5));
+  root->getChildren()[2]->addChild(new Sphere(point3d(2, 6, +4), 0.5));
 }
 
 Skeleton::~Skeleton() { delete root; }
@@ -22,7 +22,7 @@ void Skeleton::generateRandom() {
     clearHull();
     clearInterpolation();
     //TODO attention fuite de mémoire
-    root = new Node<Sphere>(Sphere(point3d(0, 0, 0), 1.5));
+    root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
 
   auto genP = [](float c = 1, float offset = 0) {
     return c * ((float)(random() % 1800)) / 100 - c * 9;
@@ -31,20 +31,20 @@ void Skeleton::generateRandom() {
   ///*
   for (int i = 0; i < 10; i++) {
     if (random() % 3 == 0) {
-      root->addChild(Sphere(point3d(genP(), genP(), genP()),
+      root->addChild(new Sphere(point3d(genP(), genP(), genP()),
                             (random() % 200) / 100 + 0.4));
     }
     for (auto child : root->getChildren()) {
       if (random() % 15 == 0) {
-        child->addChild(Sphere(point3d(genP(0.5), genP(0.5), genP(0.5)) +
-                                   child->getValue().center,
+        child->addChild(new Sphere(point3d(genP(0.5), genP(0.5), genP(0.5)) +
+                                   child->getValue()->center,
                                (random() % 200) / 100 + 0.4));
       }
       for (auto child2 : child->getChildren()) {
         if (random() % 15 == 0) {
           child2->addChild(
-              Sphere(point3d(genP(0.2, 5), genP(0.2, 5), genP(0.2, 5)) +
-                         child2->getValue().center,
+              new Sphere(point3d(genP(0.2, 5), genP(0.2, 5), genP(0.2, 5)) +
+                         child2->getValue()->center,
                      (random() % 200) / 100 + 0.4));
         }
       }
@@ -56,7 +56,7 @@ void Skeleton::generateRandom() {
 void Skeleton::generateAnimal(int numSph) {
   clearHull();
   clearInterpolation();
-  root = new Node<Sphere>(Sphere(point3d(0, 0, 0), 1.5));
+  root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
 
   float theta = (float)(random() % 3100) / 1000;
   float phi = (float)(random() % 6200) / 1000;
@@ -66,7 +66,7 @@ void Skeleton::generateAnimal(int numSph) {
     phi += (float)(random() % 3100) / 1000 * 2 * 3.14 / numSph;
     if (random() % 2 == 0)
       root->addChild(
-          Sphere(point3d(2 * sin(theta), 2 * cos(phi), 2 * sin(phi)), 1.25));
+          new Sphere(point3d(2 * sin(theta), 2 * cos(phi), 2 * sin(phi)), 1.25));
   }
   for (auto child : root->getChildren()) {
     theta = (float)(random() % 3100) / 1000;
@@ -76,8 +76,8 @@ void Skeleton::generateAnimal(int numSph) {
       phi += (float)(random() % 3100) / 1000 * 2 * 3.14 / numSph;
       if (random() % 5 == 0)
         child->addChild(
-            Sphere(point3d(1 * sin(theta), 1 * cos(phi), 1 * sin(phi)) +
-                       child->getValue().center * 2,
+            new Sphere(point3d(1 * sin(theta), 1 * cos(phi), 1 * sin(phi)) +
+                       child->getValue()->center * 2,
                    0.75));
     }
 
@@ -89,8 +89,8 @@ void Skeleton::generateAnimal(int numSph) {
         phi += (float)(random() % 3100) / 1000 * 2 * 3.14 / numSph;
         if (random() % 10 == 0)
           child2->addChild(
-              Sphere(point3d(0.5 * sin(theta), 0.5 * cos(phi), 0.5 * sin(phi)) +
-                         child2->getValue().center * 1.5,
+              new Sphere(point3d(0.5 * sin(theta), 0.5 * cos(phi), 0.5 * sin(phi)) +
+                         child2->getValue()->center * 1.5,
                      0.5));
       }
     }
@@ -149,12 +149,11 @@ void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
   interpolate(getRoot(), constantDistance, spheresPerEdge, spheresPerUnit);
 }
 
-void Skeleton::interpolate(Node<Sphere> *node, bool constantDistance,
+void Skeleton::interpolate(Node *node, bool constantDistance,
                            int spheresPerEdge, float spheresPerUnit) {
-
   int newspheres = 0;
-  point3d p1 = root->getValue()->center;
-  for (auto child : root->getChildren()) {
+  point3d p1 = node->getValue()->center;
+  for (auto child : node->getChildren()) {
     point3d p2 = child->getValue()->center;
     int spheresToAdd;
     if (constantDistance) { // Mode 2)
@@ -167,7 +166,7 @@ void Skeleton::interpolate(Node<Sphere> *node, bool constantDistance,
       point3d newp = lambda * p1 + (1 - lambda) * p2;
       // TODO : When the interpolate spheres won't be a node make sure to delete
       // it to avoid memory leak
-      double newr = lambda * root->getValue()->radius +
+      double newr = lambda * node->getValue()->radius +
                     (1 - lambda) * child->getValue()->radius;
       interSpheres.push_back(Sphere(newp, newr));
       newspheres++;
@@ -204,7 +203,7 @@ void Skeleton::stitching() {
   hullCalculated = true;
 }
 
-void Skeleton::stitching(Node<Sphere> *node, Quadriplet motherQuad,
+void Skeleton::stitching(Node *node, Quadriplet motherQuad,
                          bool isRoot) {
   // Objective : complete the hull.
   //  If there is only one neighboring square, just build a cube around the
@@ -224,7 +223,7 @@ void Skeleton::stitching(Node<Sphere> *node, Quadriplet motherQuad,
   // typically safetyFactor should be between 0.5 and 1, but other values give
   // fun results.
 
-  Sphere sphere = node->getValue();
+  Sphere sphere = *node->getValue();
 
   double r = sphere.radius;
   // Quadrangle facingMom = Quadrangle(point3d(0, 0, 0), point3d(0, 0, 0),
@@ -247,7 +246,7 @@ void Skeleton::stitching(Node<Sphere> *node, Quadriplet motherQuad,
   }
 
   for (auto child : node->getChildren()) {
-    point3d vec = child->getValue().center - sphere.center;
+    point3d vec = child->getValue()->center - sphere.center;
     vec.normalize();
     directions.push_back(vec);
   }
