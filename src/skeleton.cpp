@@ -19,38 +19,36 @@ Skeleton::~Skeleton() { delete root; }
 
 void Skeleton::draw(const uint selectedId) const { draw(root, selectedId); }
 void Skeleton::generateRandom() {
-    clearHull();
-    clearInterpolation();
-    delete root;
-    root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
+  clearHull();
+  clearInterpolation();
+  delete root;
+  root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
 
   auto genP = [](float c = 1, float offset = 0) {
     return c * ((float)(random() % 1800)) / 100 - c * 9;
   };
 
-  ///*
   for (int i = 0; i < 10; i++) {
     if (random() % 3 == 0) {
       root->addChild(new Sphere(point3d(genP(), genP(), genP()),
-                            (random() % 200) / 100 + 0.4));
+                                (random() % 200) / 100 + 0.4));
     }
     for (auto child : root->getChildren()) {
       if (random() % 15 == 0) {
         child->addChild(new Sphere(point3d(genP(0.5), genP(0.5), genP(0.5)) +
-                                   child->getValue()->center,
-                               (random() % 200) / 100 + 0.4));
+                                       child->getValue()->center,
+                                   (random() % 200) / 100 + 0.4));
       }
       for (auto child2 : child->getChildren()) {
         if (random() % 15 == 0) {
           child2->addChild(
               new Sphere(point3d(genP(0.2, 5), genP(0.2, 5), genP(0.2, 5)) +
-                         child2->getValue()->center,
-                     (random() % 200) / 100 + 0.4));
+                             child2->getValue()->center,
+                         (random() % 200) / 100 + 0.4));
         }
       }
     }
   }
-  //*/
 }
 
 void Skeleton::generateAnimal(int numSph) {
@@ -66,8 +64,8 @@ void Skeleton::generateAnimal(int numSph) {
     theta += 2 * 3.14 / numSph;
     phi += (float)(random() % 3100) / 1000 * 2 * 3.14 / numSph;
     if (random() % 2 == 0)
-      root->addChild(
-          new Sphere(point3d(2 * sin(theta), 2 * cos(phi), 2 * sin(phi)), 1.25));
+      root->addChild(new Sphere(
+          point3d(2 * sin(theta), 2 * cos(phi), 2 * sin(phi)), 1.25));
   }
   for (auto child : root->getChildren()) {
     theta = (float)(random() % 3100) / 1000;
@@ -78,8 +76,8 @@ void Skeleton::generateAnimal(int numSph) {
       if (random() % 5 == 0)
         child->addChild(
             new Sphere(point3d(1 * sin(theta), 1 * cos(phi), 1 * sin(phi)) +
-                       child->getValue()->center * 2,
-                   0.75));
+                           child->getValue()->center * 2,
+                       0.75));
     }
 
     for (auto child2 : child->getChildren()) {
@@ -89,10 +87,10 @@ void Skeleton::generateAnimal(int numSph) {
         theta += 2 * 3.14 / numSph;
         phi += (float)(random() % 3100) / 1000 * 2 * 3.14 / numSph;
         if (random() % 10 == 0)
-          child2->addChild(
-              new Sphere(point3d(0.5 * sin(theta), 0.5 * cos(phi), 0.5 * sin(phi)) +
-                         child2->getValue()->center * 1.5,
-                     0.5));
+          child2->addChild(new Sphere(
+              point3d(0.5 * sin(theta), 0.5 * cos(phi), 0.5 * sin(phi)) +
+                  child2->getValue()->center * 1.5,
+              0.5));
       }
     }
   }
@@ -175,7 +173,7 @@ void Skeleton::interpolate(Node *node, bool constantDistance,
 }
 
 void Skeleton::drawHull() {
-  if (hullCalculated) {
+  if (!hull.empty()) {
     glBegin(GL_QUADS);
     for (unsigned int t = 0; t < hull.size(); ++t) {
       point3d const &p0 = hull[t].a;
@@ -197,13 +195,9 @@ void Skeleton::stitching() {
   clearHull();
   point3d a = point3d(0, 0, 0);
   stitching(root, Quadrangle(a, a, a, a), true);
-  // cout<< hull.size()<<endl;
-  // for (auto h : hull) cout << h.a<<" "<< h.b<<" "<< h.c<<" "<< h.d<< endl;
-  hullCalculated = true;
 }
 
-void Skeleton::stitching(Node *node, Quadrangle motherQuad,
-                         bool isRoot) {
+void Skeleton::stitching(Node *node, Quadrangle motherQuad, bool isRoot) {
   // Objective : complete the hull.
   //  If there is only one neighboring square, just build a cube around the
   //  sphere.
@@ -450,7 +444,8 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
           for (int i2 = 0; i2 < 4; i2++) {
             point3d dist = q2[i2] - q[i];
             if (dist.norm() < threshhold) { // the two vertices are identical
-              if (idVec[quadNumber2 * 4 + i2]!=-1 && quadNumber2 != quadNumber)
+              if (idVec[quadNumber2 * 4 + i2] != -1 &&
+                  quadNumber2 != quadNumber)
                 cout << "Error : vertex already has an Id" << endl;
               idVec[quadNumber2 * 4 + i2] = idVec[vertexId];
             }
@@ -460,7 +455,7 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
     }
   }
 
-  //Identifying the triangles and quadrangles
+  // Identifying the triangles and quadrangles
   vector<Triplet> triangles;
   vector<Quadruplet> quadrangles;
   // [...]
