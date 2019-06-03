@@ -120,9 +120,6 @@ public:
 
   point3d center;
   double radius;
-  vector<Quadrangle> neighborSquares;
-
-  void addNeighbor(Quadrangle q) { neighborSquares.push_back(q); }
 
   friend ostream &operator<<(ostream &os, const Sphere &sphere) {
     return os << "{ centre: (" << sphere.center.x() << " , "
