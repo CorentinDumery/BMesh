@@ -28,6 +28,7 @@ public:
   void generateAnimal(int numSph=10);
 
   vector<Triangle> convexHull(vector<point3d> points);
+  point3d getScalarField(point3d pt, float T = 0.3, float alpha = 1.5);
 
 private:
   void stitching(Node *node, Quadrangle motherQuad,
@@ -35,12 +36,16 @@ private:
   void draw(Node *node, const uint selectedId,
             const bool withName = false) const;
   Node *find(Node *node, const uint selectedId) const;
-  Node *root;
   void interpolate(Node *node, bool constantDistance = true,
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
+
+  Mesh toMesh(vector<Quadrangle> hull,float threshhold = 0.001);
+  double getScalarFieldComponent(Node *node, point3d pt, double I, float alpha = 1.5);
+
+  Node *root;
   vector<Sphere> interSpheres;
   vector<Quadrangle> hull;
-  Mesh toMesh(vector<Quadrangle> hull,float threshhold = 0.001);
+
 };
 
 #endif // SQUELETON_H
