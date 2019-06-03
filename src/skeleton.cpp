@@ -196,13 +196,13 @@ void Skeleton::drawHull() {
 void Skeleton::stitching() {
   clearHull();
   point3d a = point3d(0, 0, 0);
-  stitching(root, Quadriplet(a, a, a, a), true);
+  stitching(root, Quadrangle(a, a, a, a), true);
   // cout<< hull.size()<<endl;
   // for (auto h : hull) cout << h.a<<" "<< h.b<<" "<< h.c<<" "<< h.d<< endl;
   hullCalculated = true;
 }
 
-void Skeleton::stitching(Node *node, Quadriplet motherQuad,
+void Skeleton::stitching(Node *node, Quadrangle motherQuad,
                          bool isRoot) {
   // Objective : complete the hull.
   //  If there is only one neighboring square, just build a cube around the
@@ -224,11 +224,11 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
   // Quadrangle facingMom = Quadrangle(point3d(0, 0, 0), point3d(0, 0, 0),
   //                                  point3d(0, 0, 0), point3d(0, 0, 0));
 
-  vector<Quadriplet> facingSons;
+  vector<Quadrangle> facingSons;
   // Convention : facingSons[0] représente celui vers la mère
   // Si c'est la root, c'est quelconque.
   if (isRoot)
-    facingSons.push_back(Quadriplet(point3d(0, 0, 0), point3d(0, 0, 0),
+    facingSons.push_back(Quadrangle(point3d(0, 0, 0), point3d(0, 0, 0),
                                     point3d(0, 0, 0), point3d(0, 0, 0)));
 
   vector<point3d> directions; // directions towards neighboring spheres
@@ -281,13 +281,13 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
     cp = c - 2 * x * r;
     dp = d - 2 * x * r;
 
-    hull.push_back(Quadriplet(dp, cp, bp, ap));
-    hull.push_back(Quadriplet(a, ap, bp, b));
-    hull.push_back(Quadriplet(b, bp, cp, c));
-    hull.push_back(Quadriplet(c, cp, dp, d));
-    hull.push_back(Quadriplet(d, dp, ap, a));
+    hull.push_back(Quadrangle(dp, cp, bp, ap));
+    hull.push_back(Quadrangle(a, ap, bp, b));
+    hull.push_back(Quadrangle(b, bp, cp, c));
+    hull.push_back(Quadrangle(c, cp, dp, d));
+    hull.push_back(Quadrangle(d, dp, ap, a));
     // facingMom = Quadrangle(a, b, c, d);
-    facingSons.push_back(Quadriplet(a, b, c, d));
+    facingSons.push_back(Quadrangle(a, b, c, d));
   }
 
   else { // multiple directions to consider
@@ -331,10 +331,10 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
       d = milieu + z * maxSize - y * maxSize;
 
       if (!isRoot && i == 0) { // this one is facing the mother
-        facingSons.push_back(Quadriplet(a, b, c, d));
+        facingSons.push_back(Quadrangle(a, b, c, d));
 
       } else { // facing a child
-        facingSons.push_back(Quadriplet(a, b, c, d));
+        facingSons.push_back(Quadrangle(a, b, c, d));
       }
 
       // TODO dont draw useless faces that correspond to facingSons
@@ -343,9 +343,9 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
       points.push_back(c);
       points.push_back(d);
     }
-    vector<Triplet> tri = convexHull(points);
+    vector<Triangle> tri = convexHull(points);
     for (int i = 0; i < tri.size(); i++) {
-      hull.push_back(Quadriplet(tri[i].a, tri[i].b, tri[i].c, tri[i].a));
+      hull.push_back(Quadrangle(tri[i].a, tri[i].b, tri[i].c, tri[i].a));
       // TODO merge triangles instead of displaying them as quadrangles
     }
   }
@@ -353,7 +353,7 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
   if (!isRoot) {            // dessiner le hull entre lui et sa mère
     point3d a, b, c, d;     // quadrangle facing the other sphere
     point3d ap, bp, cp, dp; // quadrangle opposite to it
-    Quadriplet facingMom = facingSons[0];
+    Quadrangle facingMom = facingSons[0];
     a = facingMom.a;
     b = facingMom.b;
     c = facingMom.c;
@@ -362,10 +362,10 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
     bp = motherQuad.b;
     cp = motherQuad.c;
     dp = motherQuad.d;
-    hull.push_back(Quadriplet(ap, a, b, bp));
-    hull.push_back(Quadriplet(bp, b, c, cp));
-    hull.push_back(Quadriplet(cp, c, d, dp));
-    hull.push_back(Quadriplet(dp, d, a, ap));
+    hull.push_back(Quadrangle(ap, a, b, bp));
+    hull.push_back(Quadrangle(bp, b, c, cp));
+    hull.push_back(Quadrangle(cp, c, d, dp));
+    hull.push_back(Quadrangle(dp, d, a, ap));
   }
 
   int n = 1;
@@ -375,11 +375,11 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
   }
 }
 
-vector<Triplet> Skeleton::convexHull(vector<point3d> points) {
+vector<Triangle> Skeleton::convexHull(vector<point3d> points) {
 
   const int n = points.size();
   qh_vertex_t vertices[n];
-  vector<Triplet> output;
+  vector<Triangle> output;
 
   for (int i = 0; i < n; ++i) {
     vertices[i].z = points[i].z();
@@ -406,7 +406,7 @@ vector<Triplet> Skeleton::convexHull(vector<point3d> points) {
                         mesh.vertices[i + 1].z);
     point3d c = point3d(mesh.vertices[i + 2].x, mesh.vertices[i + 2].y,
                         mesh.vertices[i + 2].z);
-    output.push_back(Triplet(a, b, c));
+    output.push_back(Triangle(a, b, c));
   }
 
   qh_free_mesh(mesh);
@@ -414,7 +414,7 @@ vector<Triplet> Skeleton::convexHull(vector<point3d> points) {
   return output;
 }
 
-Mesh Skeleton::toMesh(vector<Quadriplet> hull, float threshhold) {
+Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
 
   // On crée un vector idVec de taille 4*hull.size()
   // idVec[i] donne l'id attribuée au vertex i dans le Mesh en output
@@ -432,7 +432,7 @@ Mesh Skeleton::toMesh(vector<Quadriplet> hull, float threshhold) {
   vector<Vertex> vertices;
   idVec.resize(4 * hull.size(), -1);
   for (int quadNumber = 0; quadNumber < hull.size(); quadNumber++) {
-    Quadriplet quad = hull[quadNumber];
+    Quadrangle quad = hull[quadNumber];
     vector<point3d> q = {quad.a, quad.b, quad.c, quad.d};
     for (int i = 0; i < 4; i++) {
       int vertexId = 4 * quadNumber + i;
@@ -445,7 +445,7 @@ Mesh Skeleton::toMesh(vector<Quadriplet> hull, float threshhold) {
         // let's search all the following Quadriplets for the same vertex
         for (int quadNumber2 = quadNumber; quadNumber2 < hull.size();
              quadNumber2++) {
-          Quadriplet quad2 = hull[quadNumber2];
+          Quadrangle quad2 = hull[quadNumber2];
           vector<point3d> q2 = {quad2.a, quad2.b, quad2.c, quad2.d};
           for (int i2 = 0; i2 < 4; i2++) {
             point3d dist = q2[i2] - q[i];
@@ -461,8 +461,8 @@ Mesh Skeleton::toMesh(vector<Quadriplet> hull, float threshhold) {
   }
 
   //Identifying the triangles and quadrangles
-  vector<Triangle> triangles;
-  vector<Quadrangle> quadrangles;
+  vector<Triplet> triangles;
+  vector<Quadruplet> quadrangles;
   // [...]
 
   Mesh m;
