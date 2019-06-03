@@ -129,15 +129,23 @@ QString MyViewer::helpString() const {
 }
 
 void MyViewer::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_A) {
+  if (event->key() == Qt::Key_A) {
+    if (selectedNode != nullptr) { // a node is selected
+      //      point3d center = selectedNode->getValue()->getCenter();
+      //      point3d pos = point3d(cursorPos.x, cursorPos.y, cursorPos.z) +
+      //      point3d(orig.x,orig.y,center.z()); std::cout << cursorPos <<
+      //      "\t\t" << center << std::endl;
+      selectedNode->addChild(new Sphere(cursorPos, 1));
+      update();
+      // TODO
+    } else {
       skeleton.generateAnimal();
       update();
     }
-    if (event->key() == Qt::Key_K) {
-      skeleton.stitching();
-      update();
-    }
-  if (event->key() == Qt::Key_I) {
+  } else if (event->key() == Qt::Key_K) {
+    skeleton.stitching();
+    update();
+  } else if (event->key() == Qt::Key_I) {
     skeleton.interpolate();
     update();
   } else if (event->key() == Qt::Key_H) {
@@ -151,16 +159,6 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       if (ok && !text.isEmpty()) {
         updateTitle(text);
       }
-    }
-  } else if (event->key() == Qt::Key_A) {
-    if (selectedNode != nullptr) { // a node is selected
-      //      point3d center = selectedNode->getValue()->getCenter();
-      //      point3d pos = point3d(cursorPos.x, cursorPos.y, cursorPos.z) +
-      //      point3d(orig.x,orig.y,center.z()); std::cout << cursorPos <<
-      //      "\t\t" << center << std::endl;
-      selectedNode->addChild(new Sphere(cursorPos, 1));
-      update();
-      // TODO
     }
   }
 }
@@ -192,10 +190,10 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
 
   qglviewer::Vec b = camera()->cameraCoordinatesOf(a);
 
-//  std::cout << /*orig << "\t\t" << dir << "\t\t" << */ e->pos().x() << "   "
-//            << e->pos().y() << "\t\t"
-//            << camera()->pointUnderPixel(e->pos(), found)
-//            << "\t\t" << a << "\t\t" << b << std::endl;
+  //  std::cout << /*orig << "\t\t" << dir << "\t\t" << */ e->pos().x() << " "
+  //            << e->pos().y() << "\t\t"
+  //            << camera()->pointUnderPixel(e->pos(), found)
+  //            << "\t\t" << a << "\t\t" << b << std::endl;
 
   QGLViewer::mouseMoveEvent(e);
 }
