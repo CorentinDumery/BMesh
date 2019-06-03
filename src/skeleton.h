@@ -22,13 +22,16 @@ public:
     hull.clear();
     hullCalculated = false;
   }
+  void clearInterpolation(){ interSpheres.clear() ; }
   void drawHull();
   void drawInterpolation() const;
+  void generateRandom();
+  void generateAnimal(int numSph=10);
 
   vector<Triplet> convexHull(vector<point3d> points);
 
 private:
-  void stitching(Node<Sphere> *node, Quadrangle motherQuad,
+  void stitching(Node<Sphere> *node, Quadriplet motherQuad,
                  bool isRoot = false);
   void draw(Node *node, const uint selectedId,
             const bool withName = false) const;
@@ -37,8 +40,9 @@ private:
   void interpolate(Node<Sphere> *node, bool constantDistance = true,
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
   vector<Sphere> interSpheres;
-  vector<Quadrangle> hull;
+  vector<Quadriplet> hull;
   bool hullCalculated = false;
+  Mesh toMesh(vector<Quadriplet> hull,float threshhold = 0.001);
 };
 
 #endif // SQUELETON_H
