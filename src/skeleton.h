@@ -31,13 +31,13 @@ public:
   vector<Triplet> convexHull(vector<point3d> points);
 
 private:
-  void stitching(Node<Sphere> *node, Quadriplet motherQuad,
+  void stitching(Node *node, Quadriplet motherQuad,
                  bool isRoot = false);
   void draw(Node *node, const uint selectedId,
             const bool withName = false) const;
   Node *find(Node *node, const uint selectedId) const;
   Node *root;
-  void interpolate(Node<Sphere> *node, bool constantDistance = true,
+  void interpolate(Node *node, bool constantDistance = true,
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
   vector<Sphere> interSpheres;
   vector<Quadriplet> hull;
