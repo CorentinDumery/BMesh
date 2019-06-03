@@ -170,6 +170,8 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
         updateTitle(text);
       }
     }
+  } else if (event->key() == Qt::Key_S) {
+      point3d pt = skeleton.getScalarField(point3d(0,0,0));
   }
 }
 
