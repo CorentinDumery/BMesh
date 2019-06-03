@@ -1,4 +1,5 @@
 #include "sphereedit.h"
+#include "mediator.h"
 #include "point3.h"
 #include "ui_sphereedit.h"
 
@@ -35,10 +36,12 @@ double SphereEdit::getRadius() const {
 void SphereEdit::handleAddButton() const {
   Sphere *sphere = new Sphere(getPoint3d(), getRadius());
   node->addChild(sphere);
+  Mediator::getInstance()->updateViewer();
 }
 
 void SphereEdit::handleEditButton() const {
   node->editSphere(getPoint3d(), getRadius());
+  Mediator::getInstance()->updateViewer();
 }
 
 void SphereEdit::updateSelection(Node *node) {

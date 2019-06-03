@@ -2,6 +2,7 @@
 #include "node.h"
 #include "skeleton.h"
 #include "sphereedit.h"
+#include "mediator.h"
 #include <QApplication>
 #include <QMainWindow>
 #include <QToolBar>
@@ -13,6 +14,9 @@ int main(int argc, char **argv) {
   QApplication app(argc, argv);
 
   MyViewer *viewer = new MyViewer;
+
+  QObject::connect(Mediator::getInstance(), SIGNAL(updateViewer()), viewer,
+                   SLOT(update()));
 
   QMainWindow *mainWindow = new QMainWindow;
   QWidget *mainWidget = new QWidget;

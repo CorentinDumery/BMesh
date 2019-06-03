@@ -18,13 +18,15 @@ HEADERS += ./src/point3.h \
     ./src/sphereedit.h \
     src/node.h \
     src/skeleton.h \
-    src/utility.h
+    src/utility.h \
+    src/mediator.h
 SOURCES += ./src/main.cpp \
     ./src/gl/GLUtilityMethods.cpp\
     ./src/gl/BasicColors.cpp \
     ./src/sphereedit.cpp \
     src/skeleton.cpp \
-    src/MyViewer.cpp
+    src/MyViewer.cpp \
+    src/mediator.cpp
 
 #QGLViewer
 {
