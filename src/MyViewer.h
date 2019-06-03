@@ -28,12 +28,16 @@
 
 #include "qt/QSmartAction.h"
 #include "skeleton.h"
+#include "node.h"
 
 class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   Q_OBJECT
 
   Mesh mesh;
   Skeleton skeleton;
+  Node *selectedNode = nullptr;
+
+  qglviewer::Vec cursorPos, orig, dir;
 
   QWidget *controls;
 
@@ -70,7 +74,7 @@ public:
     QGLViewer::mousePressEvent(e);
   }
 
-  void mouseMoveEvent(QMouseEvent *e) override { QGLViewer::mouseMoveEvent(e); }
+  void mouseMoveEvent(QMouseEvent *e) override;
 
   void mouseReleaseEvent(QMouseEvent *e) override {
     QGLViewer::mouseReleaseEvent(e);

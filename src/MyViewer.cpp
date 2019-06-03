@@ -45,13 +45,14 @@ void MyViewer::draw() {
 void MyViewer::postSelection(const QPoint &point) {
   if (selectedName() == -1) {
     cout << "NO SELECTION" << endl;
+    selectedNode = nullptr;
     emit(nodeSelected(nullptr));
   } else {
     cout << "SELECTED ELEMENT : " << selectedName()
          << ", selected under pixel (" << point.x() << "," << point.y() << ")"
          << endl;
-    Node *node = skeleton.find(selectedName());
-    emit(nodeSelected(node));
+    selectedNode = skeleton.find(selectedName());
+    emit(nodeSelected(selectedNode));
   }
 }
 
@@ -139,8 +140,7 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
   if (event->key() == Qt::Key_I) {
     skeleton.interpolate();
     update();
-  }
-  if (event->key() == Qt::Key_H) {
+  } else if (event->key() == Qt::Key_H) {
     help();
   } else if (event->key() == Qt::Key_T) {
     if (event->modifiers() & Qt::CTRL) {
@@ -151,6 +151,16 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       if (ok && !text.isEmpty()) {
         updateTitle(text);
       }
+    }
+  } else if (event->key() == Qt::Key_A) {
+    if (selectedNode != nullptr) { // a node is selected
+      //      point3d center = selectedNode->getValue()->getCenter();
+      //      point3d pos = point3d(cursorPos.x, cursorPos.y, cursorPos.z) +
+      //      point3d(orig.x,orig.y,center.z()); std::cout << cursorPos <<
+      //      "\t\t" << center << std::endl;
+      selectedNode->addChild(new Sphere(cursorPos, 1));
+      update();
+      // TODO
     }
   }
 }
@@ -169,6 +179,25 @@ void MyViewer::mouseDoubleClickEvent(QMouseEvent *e) {
   }
 
   QGLViewer::mouseDoubleClickEvent(e);
+}
+
+void MyViewer::mouseMoveEvent(QMouseEvent *e) {
+  // get mouse ray in real world coordinate.
+  camera()->convertClickToLine(e->pos(), orig, dir);
+
+  bool found;
+  cursorPos = camera()->pointUnderPixel(e->pos(), found);
+  qglviewer::Vec a = camera()->unprojectedCoordinatesOf(
+      qglviewer::Vec(e->pos().x(), e->pos().y(), 0));
+
+  qglviewer::Vec b = camera()->cameraCoordinatesOf(a);
+
+//  std::cout << /*orig << "\t\t" << dir << "\t\t" << */ e->pos().x() << "   "
+//            << e->pos().y() << "\t\t"
+//            << camera()->pointUnderPixel(e->pos(), found)
+//            << "\t\t" << a << "\t\t" << b << std::endl;
+
+  QGLViewer::mouseMoveEvent(e);
 }
 
 void MyViewer::addSphereToSkeleton(Sphere *sphere) {

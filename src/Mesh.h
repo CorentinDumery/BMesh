@@ -118,6 +118,10 @@ public:
     glPopName();
   }
 
+  point3d getCenter() const {
+      return center;
+  }
+
   point3d center;
   double radius;
 
