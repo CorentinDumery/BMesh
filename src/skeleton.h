@@ -20,7 +20,6 @@ public:
 
   void clearHull() {
     hull.clear();
-    hullCalculated = false;
   }
   void clearInterpolation(){ interSpheres.clear() ; }
   void drawHull();
@@ -41,7 +40,6 @@ private:
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
   vector<Sphere> interSpheres;
   vector<Quadrangle> hull;
-  bool hullCalculated = false;
   Mesh toMesh(vector<Quadrangle> hull,float threshhold = 0.001);
 };
 
