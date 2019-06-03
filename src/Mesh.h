@@ -22,10 +22,17 @@ struct Triangle {
   unsigned int operator[](unsigned int c) const { return corners[c]; }
   unsigned int size() const { return 3; }
 };
+struct Quadrangle {
+    unsigned int corners[4];
+    unsigned int &operator[](unsigned int c) { return corners[c]; }
+    unsigned int operator[](unsigned int c) const { return corners[c]; }
+    unsigned int size() const { return 4; }
 
+};
 struct Mesh {
   std::vector<Vertex> vertices;
   std::vector<Triangle> triangles;
+  vector<Quadrangle> quadrangles;
   void clear() {
     vertices.clear();
     triangles.clear();
@@ -46,10 +53,10 @@ struct Mesh {
   }
 };
 
-class Quadrangle {
+class Quadriplet {
 public:
   point3d a,b,c,d;
-  Quadrangle(point3d a, point3d b, point3d c, point3d d)
+  Quadriplet(point3d a, point3d b, point3d c, point3d d)
       : a(a), b(b), c(c), d(d) {}
 };
 class Triplet { //triplet of point3d, 3D triangle
@@ -113,9 +120,9 @@ public:
 
   point3d center;
   double radius;
-  vector<Quadrangle> neighborSquares;
+  vector<Quadriplet> neighborSquares;
 
-  void addNeighbor(Quadrangle q) { neighborSquares.push_back(q); }
+  void addNeighbor(Quadriplet q) { neighborSquares.push_back(q); }
 
   friend ostream &operator<<(ostream &os, const Sphere &sphere) {
     return os << "{ centre: (" << sphere.center.x() << " , "
