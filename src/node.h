@@ -33,7 +33,7 @@ public:
   void editSphere(point3d center, double radius) {
     sphere->center = center;
     sphere->radius = radius;
-  };
+  }
 
 private:
   Sphere *sphere;

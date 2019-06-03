@@ -21,7 +21,7 @@ void Skeleton::draw(const uint selectedId) const { draw(root, selectedId); }
 void Skeleton::generateRandom() {
     clearHull();
     clearInterpolation();
-    //TODO attention fuite de mémoire
+    delete root;
     root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
 
   auto genP = [](float c = 1, float offset = 0) {
@@ -56,6 +56,7 @@ void Skeleton::generateRandom() {
 void Skeleton::generateAnimal(int numSph) {
   clearHull();
   clearInterpolation();
+  delete root;
   root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
 
   float theta = (float)(random() % 3100) / 1000;
@@ -164,8 +165,6 @@ void Skeleton::interpolate(Node *node, bool constantDistance,
     for (int i = 1; i < spheresToAdd + 1; i++) {
       float lambda = (float)i / (spheresToAdd + 1);
       point3d newp = lambda * p1 + (1 - lambda) * p2;
-      // TODO : When the interpolate spheres won't be a node make sure to delete
-      // it to avoid memory leak
       double newr = lambda * node->getValue()->radius +
                     (1 - lambda) * child->getValue()->radius;
       interSpheres.push_back(Sphere(newp, newr));
@@ -210,10 +209,6 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
   //  sphere.
   //  If there are at least two, try to stitch them
 
-  // TODO find a way to deal with quads that are too close to the sphere
-
-  // TODO get rid of neighborSquares ?
-
   // On parcours l'arbre, et chaque fils ajoute le hull entre lui et sa mère.
   // La mère doit quand même add le hull autour de sa propre sphère
 
@@ -256,10 +251,7 @@ void Skeleton::stitching(Node *node, Quadriplet motherQuad,
   }
 
   if (directions.size() == 1) {
-
-    // Quadrangle quad = sphere.neighborSquares[0];
     point3d x = directions[0];
-
     point3d y, z;
 
     if (!isRoot) { // try to use the same directions as mother for a better edge
@@ -486,4 +478,3 @@ Mesh Skeleton::toMesh(vector<Quadriplet> hull, float threshhold) {
 
 // TODO stop displaying triangles as quadrangles !
 // TODO convert vector<Quadrangle> to an actual mesh
-// TODO merge triangles
