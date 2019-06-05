@@ -29,6 +29,8 @@ public:
 
   vector<Triangle> convexHull(vector<point3d> points);
 
+  Mesh myMesh;
+
 private:
   void stitching(Node *node, Quadrangle motherQuad,
                  bool isRoot = false);
