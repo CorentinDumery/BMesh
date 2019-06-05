@@ -23,11 +23,10 @@ struct Triplet {
   unsigned int size() const { return 3; }
 };
 struct Quadruplet {
-    unsigned int corners[4];
-    unsigned int &operator[](unsigned int c) { return corners[c]; }
-    unsigned int operator[](unsigned int c) const { return corners[c]; }
-    unsigned int size() const { return 4; }
-
+  unsigned int corners[4];
+  unsigned int &operator[](unsigned int c) { return corners[c]; }
+  unsigned int operator[](unsigned int c) const { return corners[c]; }
+  unsigned int size() const { return 4; }
 };
 struct Mesh {
   std::vector<Vertex> vertices;
@@ -50,20 +49,33 @@ struct Mesh {
       glVertex3f(p2[0], p2[1], p2[2]);
     }
     glEnd();
+    glBegin(GL_QUADS);
+    for (unsigned int t = 0; t < quadrangles.size(); ++t) {
+      point3d const &p0 = vertices[quadrangles[t][0]].p;
+      point3d const &p1 = vertices[quadrangles[t][1]].p;
+      point3d const &p2 = vertices[quadrangles[t][2]].p;
+      point3d const &p3 = vertices[quadrangles[t][3]].p;
+      point3d const &n = point3d::cross(p1 - p0, p2 - p0).direction();
+      glNormal3f(n[0], n[1], n[2]);
+      glVertex3f(p0[0], p0[1], p0[2]);
+      glVertex3f(p1[0], p1[1], p1[2]);
+      glVertex3f(p2[0], p2[1], p2[2]);
+      glVertex3f(p3[0], p3[1], p3[2]);
+    }
+    glEnd();
   }
 };
 
 class Quadrangle {
 public:
-  point3d a,b,c,d;
+  point3d a, b, c, d;
   Quadrangle(point3d a, point3d b, point3d c, point3d d)
       : a(a), b(b), c(c), d(d) {}
 };
-class Triangle { //triplet of point3d, 3D triangle
+class Triangle { // triplet of point3d, 3D triangle
 public:
-  point3d a,b,c;
-  Triangle(point3d a, point3d b, point3d c)
-      : a(a), b(b), c(c) {}
+  point3d a, b, c;
+  Triangle(point3d a, point3d b, point3d c) : a(a), b(b), c(c) {}
 };
 
 class Shape {

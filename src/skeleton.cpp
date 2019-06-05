@@ -19,6 +19,8 @@ Skeleton::~Skeleton() { delete root; }
 
 void Skeleton::draw(const uint selectedId) const { draw(root, selectedId); }
 void Skeleton::generateRandom() {
+  srand(time(NULL));
+
   clearHull();
   clearInterpolation();
   delete root;
@@ -52,6 +54,7 @@ void Skeleton::generateRandom() {
 }
 
 void Skeleton::generateAnimal(int numSph) {
+  srand(time(NULL));
   clearHull();
   clearInterpolation();
   delete root;
@@ -195,6 +198,8 @@ void Skeleton::stitching() {
   clearHull();
   point3d a = point3d(0, 0, 0);
   stitching(root, Quadrangle(a, a, a, a), true);
+  myMesh = toMesh(hull);
+  hull.clear();
 }
 
 void Skeleton::stitching(Node *node, Quadrangle motherQuad, bool isRoot) {
@@ -458,11 +463,38 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
   // Identifying the triangles and quadrangles
   vector<Triplet> triangles;
   vector<Quadruplet> quadrangles;
-  // [...]
+  for (int quadNumber = 0; quadNumber < hull.size(); quadNumber++) {
+    // Quadrangle quad = hull[quadNumber];
+    // vector<point3d> q = {quad.a, quad.b, quad.c, quad.d};
+    for (int i = 0; i < 4; i++) {
+      bool foundTri = false;
+      for (int j = i + 1; j < 4; j++) {
+        if (idVec[quadNumber * 4 + i] == idVec[quadNumber * 4 + j]) {
+          // let's make a triangle with every vertex but i
+          Triplet tr = {idVec[quadNumber * 4 + ((i + 1) % 4)],
+                        idVec[quadNumber * 4 + ((i + 2) % 4)],
+                        idVec[quadNumber * 4 + ((i + 3) % 4)]};
+          foundTri = true;
+          triangles.push_back(tr);
+          // cout << tr.corners[0]<<","<< tr.corners[1]<<","<< tr.corners[2] <<
+          // endl;
+        }
+      }
+
+      if (!foundTri) { // congratulations, it's a quadrangle !
+        Quadruplet qu = {idVec[quadNumber * 4], idVec[quadNumber * 4 + 1],
+                         idVec[quadNumber * 4 + 2], idVec[quadNumber * 4 + 3]};
+        quadrangles.push_back(qu);
+        // cout << qu.corners[0]<<","<< qu.corners[1]<<","<<
+        // qu.corners[2]<<","<< qu.corners[3] << endl;
+      }
+    }
+  }
 
   Mesh m;
   m.triangles = triangles;
   m.quadrangles = quadrangles;
+  m.vertices = vertices;
   return m;
 }
 
