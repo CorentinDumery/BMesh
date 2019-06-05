@@ -36,6 +36,7 @@ void MyViewer::draw() {
 
   skeleton.draw(selectedName());
   skeleton.drawHull();
+  skeleton.myMesh.draw();
   skeleton.drawInterpolation();
 
   // TODO: add a Mesh mode
