@@ -26,6 +26,7 @@ public:
   void drawInterpolation() const;
   void generateRandom();
   void generateAnimal(int numSph=10);
+  void generateStar();
 
   vector<Triangle> convexHull(vector<point3d> points);
 
