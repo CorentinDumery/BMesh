@@ -33,7 +33,10 @@ void MyViewer::draw() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   glColor3f(0.5, 0.5, 0.8);
-
+  if (fillMode)
+    glPolygonMode(GL_FRONT, GL_FILL);
+  else
+    glPolygonMode(GL_FRONT, GL_LINE);
   skeleton.draw(selectedName());
   skeleton.drawHull();
   skeleton.myMesh.draw();
@@ -143,6 +146,12 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       skeleton.generateAnimal();
       update();
     }
+  } else if (event->key() == Qt::Key_S) {
+    skeleton.generateStar();
+    update();
+  } else if (event->key() == Qt::Key_N) {
+    fillMode = !fillMode;
+    update();
   } else if (event->key() == Qt::Key_K) {
     skeleton.stitching();
     update();

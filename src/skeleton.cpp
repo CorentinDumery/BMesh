@@ -99,6 +99,22 @@ void Skeleton::generateAnimal(int numSph) {
   }
 }
 
+void Skeleton::generateStar() {
+  clearHull();
+  clearInterpolation();
+  delete root;
+  root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
+
+  root->addChild(new Sphere(point3d(3, 0, 4)));
+  root->addChild(new Sphere(point3d(3, 3, 4)));
+  root->addChild(new Sphere(point3d(0, 3, 4)));
+  root->addChild(new Sphere(point3d(0, 0, 4)));
+  root->addChild(new Sphere(point3d(3, 0, -4)));
+  root->addChild(new Sphere(point3d(3, 3, -4)));
+  root->addChild(new Sphere(point3d(0, 3, -4)));
+  root->addChild(new Sphere(point3d(0, 0, -4)));
+}
+
 void Skeleton::drawWithNames() const {
   // The selected id is 0, because drawing with names don't care about the
   // color.
@@ -199,6 +215,7 @@ void Skeleton::stitching() {
   point3d a = point3d(0, 0, 0);
   stitching(root, Quadrangle(a, a, a, a), true);
   myMesh = toMesh(hull);
+  myMesh.mergeTriangles();
   hull.clear();
 }
 
@@ -413,7 +430,7 @@ vector<Triangle> Skeleton::convexHull(vector<point3d> points) {
   return output;
 }
 
-Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
+Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshold) {
 
   // On crée un vector idVec de taille 4*hull.size()
   // idVec[i] donne l'id attribuée au vertex i dans le Mesh en output
@@ -448,7 +465,7 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
           vector<point3d> q2 = {quad2.a, quad2.b, quad2.c, quad2.d};
           for (int i2 = 0; i2 < 4; i2++) {
             point3d dist = q2[i2] - q[i];
-            if (dist.norm() < threshhold) { // the two vertices are identical
+            if (dist.norm() < threshold) { // the two vertices are identical
               if (idVec[quadNumber2 * 4 + i2] != -1 &&
                   quadNumber2 != quadNumber)
                 cout << "Error : vertex already has an Id" << endl;
@@ -466,8 +483,9 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
   for (int quadNumber = 0; quadNumber < hull.size(); quadNumber++) {
     // Quadrangle quad = hull[quadNumber];
     // vector<point3d> q = {quad.a, quad.b, quad.c, quad.d};
+    bool foundTri = false;
     for (int i = 0; i < 4; i++) {
-      bool foundTri = false;
+
       for (int j = i + 1; j < 4; j++) {
         if (idVec[quadNumber * 4 + i] == idVec[quadNumber * 4 + j]) {
           // let's make a triangle with every vertex but i
@@ -476,8 +494,6 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
                         idVec[quadNumber * 4 + ((i + 3) % 4)]};
           foundTri = true;
           triangles.push_back(tr);
-          // cout << tr.corners[0]<<","<< tr.corners[1]<<","<< tr.corners[2] <<
-          // endl;
         }
       }
 
@@ -485,8 +501,6 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
         Quadruplet qu = {idVec[quadNumber * 4], idVec[quadNumber * 4 + 1],
                          idVec[quadNumber * 4 + 2], idVec[quadNumber * 4 + 3]};
         quadrangles.push_back(qu);
-        // cout << qu.corners[0]<<","<< qu.corners[1]<<","<<
-        // qu.corners[2]<<","<< qu.corners[3] << endl;
       }
     }
   }
@@ -497,11 +511,3 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
   m.vertices = vertices;
   return m;
 }
-
-// merge
-// norme =
-// angles = 90°
-// grande taille
-
-// TODO stop displaying triangles as quadrangles !
-// TODO convert vector<Quadrangle> to an actual mesh

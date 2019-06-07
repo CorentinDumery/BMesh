@@ -36,6 +36,7 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   Mesh mesh;
   Skeleton skeleton;
   Node *selectedNode = nullptr;
+  bool fillMode = true;
 
   qglviewer::Vec cursorPos, orig, dir;
 
