@@ -135,6 +135,7 @@ QString MyViewer::helpString() const {
   text += "<li>K   :   proceed stitching</li>";
   text += "<li>S   :   get information about the scalar field";
   text += "<li>E   :   proceed evolution</li>";
+  text += "<li>G   :   get diverse kind of information</li>";
   text += "</ul>";
   return text;
 }
@@ -182,6 +183,11 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
         skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
     std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
               << "\tI gradient : " << pt.grad << std::endl;
+  } else if (event->key() == Qt::Key_G) {
+      int nbNode = skeleton.countNode(skeleton.getRoot());
+      int subd = skeleton.getSubdivisionLevel();
+      std::cout << "Nb Node : " << nbNode << std::endl;
+      std::cout << "Subd level : " << subd << std::endl;
   }
 }
 

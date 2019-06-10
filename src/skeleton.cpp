@@ -167,6 +167,27 @@ void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
 
   interSpheres.clear();
   interpolate(getRoot(), constantDistance, spheresPerEdge, spheresPerUnit);
+
+  // for the evolve process
+  if (constantDistance) {
+      // approximation of the level of subdivision
+      int nbNode = countNode(getRoot());
+      subdivisionLevel = (int)(interSpheres.size()/nbNode);
+  }
+  else {
+      subdivisionLevel = spheresPerEdge;
+  }
+
+}
+
+int Skeleton::countNode(Node *node, int nb) {
+
+    nb += 1;
+
+    for (auto child : node->getChildren()){
+        nb = countNode(child, nb);
+    }
+    return nb;
 }
 
 void Skeleton::interpolate(Node *node, bool constantDistance,
