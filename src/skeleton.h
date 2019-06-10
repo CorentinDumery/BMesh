@@ -5,9 +5,11 @@
 #include "node.h"
 #include <vector>
 
-struct ValGrad {
-  double val = 0;
-  point3d grad = point3d(0.0f, 0.0f, 0.0f);
+struct DVect {
+    double val;
+    point3d vect;
+    DVect() : val(0), vect(point3d(0.0f, 0.0f, 0.0f)) {}
+    DVect(double d, point3d p) : val(d), vect(p) {}
 };
 
 class Skeleton {
@@ -33,8 +35,9 @@ public:
   void generateAnimal(int numSph=10);
 
   vector<Triangle> convexHull(vector<point3d> points);
-  ValGrad getScalarField(point3d pt, float T = 0.3, float alpha = 1.5);
-  point3d evolve(point3d xt, double Itarget, float T = 0.3, float alpha = 1.5);
+  DVect getScalarField(point3d pt, float T = 0.3, float alpha = 1.5);
+  DVect evolvePt(point3d xt, double k1, double k2, double Itarget, float T = 0.3, float alpha = 1.5);
+  void evolve(double Itarget, float T = 0.3, float alpha = 1.5);
 
   Mesh myMesh;
   int countNode(Node *node, int nb = 0);
@@ -49,9 +52,9 @@ private:
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
 
   Mesh toMesh(vector<Quadrangle> hull, float threshhold = 0.001);
-  ValGrad getScalarFieldComponent(Node *node, point3d pt, ValGrad I,
+  DVect getScalarFieldComponent(Node *node, point3d pt, DVect I,
                                   float alpha = 1.5);
-  ValGrad calcValGradI(ValGrad I, point3d pt, Sphere sphere, float alpha);
+  DVect calcValGradI(DVect I, point3d pt, Sphere sphere, float alpha);
 
   Node *root;
   vector<Sphere> interSpheres;

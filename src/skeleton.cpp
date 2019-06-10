@@ -523,11 +523,11 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshold) {
   return m;
 }
 
-ValGrad Skeleton::getScalarField(point3d pt, float T, float alpha) {
+DVect Skeleton::getScalarField(point3d pt, float T, float alpha) {
   // T : threshold controlling the proximity between the mesh and the scalar
   // field
 
-  ValGrad I;
+  DVect I;
 
   // compute fi for every node sphere
   I = getScalarFieldComponent(root, pt, I, alpha);
@@ -543,21 +543,20 @@ ValGrad Skeleton::getScalarField(point3d pt, float T, float alpha) {
   return I;
 }
 
-ValGrad Skeleton::calcValGradI(ValGrad I, point3d pt, Sphere sphere,
-                               float alpha) {
+DVect Skeleton::calcValGradI(DVect I, point3d pt, Sphere sphere, float alpha) {
 
   double r = (pt - sphere.center).sqrnorm();
   double Ri = alpha * sphere.radius;
   double fi = (r > Ri) ? 0 : pow(1 - pow(r / Ri, 2), 2);
   double dfi = (r > Ri) ? 0 : 4 / pow(sphere.radius, 2) * (1 - pow(r / Ri, 2));
   I.val += fi;
-  I.grad += dfi * (pt - sphere.center);
+  I.vect += dfi * (pt - sphere.center);
 
   return I;
 }
 
-ValGrad Skeleton::getScalarFieldComponent(Node *node, point3d pt, ValGrad I,
-                                          float alpha) {
+DVect Skeleton::getScalarFieldComponent(Node *node, point3d pt, DVect I,
+                                        float alpha) {
 
   const Sphere *sphere = node->getValue();
 
@@ -583,7 +582,8 @@ int Skeleton::countNode(Node *node, int nb) {
 double Skeleton::getMinRadius(Node *node, double rad) {
 
   // the minimal radius necessarily is the radius of a node's sphere
-  // since the other spheres (and therefore radius) only result from interpolation
+  // since the other spheres (and therefore radius) only result from
+  // interpolation
 
   if (node->getValue()->radius < rad)
     rad = node->getValue()->radius;
@@ -594,21 +594,53 @@ double Skeleton::getMinRadius(Node *node, double rad) {
   return rad;
 }
 
-point3d Skeleton::evolve(point3d xt, double Itarget, float T, float alpha) {
-  ValGrad v = getScalarField(xt, T, alpha);
+DVect Skeleton::evolvePt(point3d xt, double k1, double k2, double Itarget,
+                         float T, float alpha) {
+  DVect v = getScalarField(xt, T, alpha);
   double I = v.val;
-  point3d deltaI = v.grad;
-  double k1 = 1; // TODO
-  double k2 = 1; // TODO
+  point3d deltaI = v.vect;
   double f = 1 / (1 + abs(k1) + abs(k2));
   double F = (I - Itarget) * f;
-  double Fmax = F; // TODO
-
-  double step = getMinRadius(root, root->getValue()->radius)/pow(2, subdivisionLevel);
-  double deltaT = step / Fmax;
 
   deltaI.normalize();
-  return xt - deltaI * F * deltaT;
+  return DVect(F, deltaI * F);
+}
+
+void Skeleton::evolve(double Itarget, float T, float alpha) {
+
+  std::vector<Vertex> m_vertices;
+  double Fmax = 0;
+
+  for (unsigned int t = 0; t < myMesh.vertices.size(); ++t) {
+
+    // TODO : modifier la ligne dessous dans l'appel pour bien avoir k1 et k2
+    // (ici j'ai supposé que k1 et k2 étaient rangés en duplets pour chaque
+    // vertices, de manière semblable à une liste de normales
+
+    DVect dvect = evolvePt(
+        myMesh.vertices[t], myMesh.curvatures[t][0], myMesh.curvatues[t][1],
+        Itarget, T, alpha); // returns F (dvect.val) and normal*F (dvect.vect)
+
+    // update the find of Fmax
+    if (dvect.val > Fmax)
+      Fmax = dvect.val;
+
+    // register the normal*F part of the computation
+    Vertex v;
+    v.p = dvect.vect;
+    m_vertices.push_back(v);
+  }
+
+  double step =
+      getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
+  double deltaT = step / Fmax;
+
+  for (unsigned int t = 0; t < m_vertices.size(); ++t) {
+    m_vertices[t].p = myMesh.vertices[t].p + m_vertices[t].p * deltaT;
+  }
+
+  // TODO : bien ranger m_vertices à sa place dans la fonction Mesh
+  // (remplacement de l'ancienne liste "vertices")
 }
 
 // merge
