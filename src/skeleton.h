@@ -5,6 +5,11 @@
 #include "node.h"
 #include <vector>
 
+struct ValGrad {
+    double val = 0;
+    point3d grad = point3d(0.0f,0.0f,0.0f);
+};
+
 class Skeleton {
 public:
   Skeleton(Sphere *sphere = new Sphere());
@@ -29,7 +34,8 @@ public:
   void generateStar();
 
   vector<Triangle> convexHull(vector<point3d> points);
-  point3d getScalarField(point3d pt, float T = 0.3, float alpha = 1.5);
+  ValGrad getScalarField(point3d pt, float T = 0.3, float alpha = 1.5);
+  point3d evolve(point3d xt, double Itarget, float T = 0.3, float alpha = 1.5);
 
   Mesh myMesh;
 
@@ -43,7 +49,8 @@ private:
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
 
   Mesh toMesh(vector<Quadrangle> hull,float threshhold = 0.001);
-  double getScalarFieldComponent(Node *node, point3d pt, double I, float alpha = 1.5);
+  ValGrad getScalarFieldComponent(Node *node, point3d pt, ValGrad I, float alpha = 1.5);
+  ValGrad calcValGradI(ValGrad I, point3d pt, Sphere sphere, float alpha);
 
   Node *root;
   vector<Sphere> interSpheres;
