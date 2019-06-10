@@ -170,24 +170,12 @@ void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
 
   // for the evolve process
   if (constantDistance) {
-      // approximation of the level of subdivision
-      int nbNode = countNode(getRoot());
-      subdivisionLevel = (int)(interSpheres.size()/nbNode);
+    // approximation of the level of subdivision
+    int nbNode = countNode(getRoot());
+    subdivisionLevel = (int)(interSpheres.size() / nbNode);
+  } else {
+    subdivisionLevel = spheresPerEdge;
   }
-  else {
-      subdivisionLevel = spheresPerEdge;
-  }
-
-}
-
-int Skeleton::countNode(Node *node, int nb) {
-
-    nb += 1;
-
-    for (auto child : node->getChildren()){
-        nb = countNode(child, nb);
-    }
-    return nb;
 }
 
 void Skeleton::interpolate(Node *node, bool constantDistance,
@@ -555,20 +543,21 @@ ValGrad Skeleton::getScalarField(point3d pt, float T, float alpha) {
   return I;
 }
 
-ValGrad Skeleton::calcValGradI(ValGrad I, point3d pt, Sphere sphere, float alpha) {
+ValGrad Skeleton::calcValGradI(ValGrad I, point3d pt, Sphere sphere,
+                               float alpha) {
 
-    double r = (pt - sphere.center).sqrnorm();
-    double Ri = alpha * sphere.radius;
-    double fi = (r > Ri) ? 0 : pow(1 - pow(r / Ri, 2), 2);
-    double dfi = (r > Ri) ? 0 : 4/pow(sphere.radius, 2)*(1 - pow(r / Ri, 2));
-    I.val += fi;
-    I.grad += dfi*(pt - sphere.center);
+  double r = (pt - sphere.center).sqrnorm();
+  double Ri = alpha * sphere.radius;
+  double fi = (r > Ri) ? 0 : pow(1 - pow(r / Ri, 2), 2);
+  double dfi = (r > Ri) ? 0 : 4 / pow(sphere.radius, 2) * (1 - pow(r / Ri, 2));
+  I.val += fi;
+  I.grad += dfi * (pt - sphere.center);
 
-    return I;
+  return I;
 }
 
-ValGrad Skeleton::getScalarFieldComponent(Node *node, point3d pt,
-                                          ValGrad I, float alpha) {
+ValGrad Skeleton::getScalarFieldComponent(Node *node, point3d pt, ValGrad I,
+                                          float alpha) {
 
   const Sphere *sphere = node->getValue();
 
@@ -581,6 +570,30 @@ ValGrad Skeleton::getScalarFieldComponent(Node *node, point3d pt,
   return I;
 }
 
+int Skeleton::countNode(Node *node, int nb) {
+
+  nb += 1;
+
+  for (auto child : node->getChildren()) {
+    nb = countNode(child, nb);
+  }
+  return nb;
+}
+
+double Skeleton::getMinRadius(Node *node, double rad) {
+
+  // the minimal radius necessarily is the radius of a node's sphere
+  // since the other spheres (and therefore radius) only result from interpolation
+
+  if (node->getValue()->radius < rad)
+    rad = node->getValue()->radius;
+
+  for (auto child : node->getChildren()) {
+    rad = getMinRadius(child, rad);
+  }
+  return rad;
+}
+
 point3d Skeleton::evolve(point3d xt, double Itarget, float T, float alpha) {
   ValGrad v = getScalarField(xt, T, alpha);
   double I = v.val;
@@ -590,8 +603,8 @@ point3d Skeleton::evolve(point3d xt, double Itarget, float T, float alpha) {
   double f = 1 / (1 + abs(k1) + abs(k2));
   double F = (I - Itarget) * f;
   double Fmax = F; // TODO
-  double step =
-      1; // TODO : min{r_i}/pow(2, k) où k est le niveau de subdivision
+
+  double step = getMinRadius(root, root->getValue()->radius)/pow(2, subdivisionLevel);
   double deltaT = step / Fmax;
 
   deltaI.normalize();

@@ -184,10 +184,15 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
     std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
               << "\tI gradient : " << pt.grad << std::endl;
   } else if (event->key() == Qt::Key_G) {
-      int nbNode = skeleton.countNode(skeleton.getRoot());
-      int subd = skeleton.getSubdivisionLevel();
-      std::cout << "Nb Node : " << nbNode << std::endl;
-      std::cout << "Subd level : " << subd << std::endl;
+    //      int nbNode = skeleton.countNode(skeleton.getRoot());
+    //      std::cout << "Nb Node : " << nbNode << std::endl;
+
+    //      int subd = skeleton.getSubdivisionLevel();
+    //      std::cout << "Subd level : " << subd << std::endl;
+
+    double u = skeleton.getMinRadius(skeleton.getRoot(),
+                                     skeleton.getRoot()->getValue()->radius);
+    std::cout << "Minimal radius : " << u << std::endl;
   }
 }
 
