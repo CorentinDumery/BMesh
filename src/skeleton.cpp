@@ -468,48 +468,67 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshhold) {
   return m;
 }
 
-point3d Skeleton::getScalarField(point3d pt, float T, float alpha) {
+ValGrad Skeleton::getScalarField(point3d pt, float T, float alpha) {
   // T : threshold controlling the proximity between the mesh and the scalar
   // field
 
-  double I = 0;
+  ValGrad I;
 
   // compute fi for every node sphere
   I = getScalarFieldComponent(root, pt, I, alpha);
 
   // compute fi for every intersphere
   for (auto sphere : interSpheres) {
-    double r = (pt - sphere.center).sqrnorm();
-    double Ri = alpha * sphere.radius;
-    double fi = (r > Ri) ? 0 : pow(1 - pow(r / Ri, 2), 2);
-    I += fi;
+    I = calcValGradI(I, pt, sphere, alpha);
   }
 
   // don't forget to lessen T
-  I -= T;
+  I.val -= T;
 
-  // solve the equation : find pt so that I(pt) = sum(fi) - T = 0
-  // TODO - pour l'instant, cette fonction évalue le champ scalaire en un point
-  // pt donné (valeur de I, 2 lignes plus haut)
-
-  return point3d(0, 0, 0);
+  return I;
 }
 
-double Skeleton::getScalarFieldComponent(Node *node, point3d pt, double I,
-                                         float alpha) {
+ValGrad Skeleton::calcValGradI(ValGrad I, point3d pt, Sphere sphere, float alpha) {
+
+    double r = (pt - sphere.center).sqrnorm();
+    double Ri = alpha * sphere.radius;
+    double fi = (r > Ri) ? 0 : pow(1 - pow(r / Ri, 2), 2);
+    double dfi = (r > Ri) ? 0 : 4/pow(sphere.radius, 2)*(1 - pow(r / Ri, 2));
+    I.val += fi;
+    I.grad += dfi*(pt - sphere.center);
+
+    return I;
+}
+
+ValGrad Skeleton::getScalarFieldComponent(Node *node, point3d pt,
+                                          ValGrad I, float alpha) {
 
   const Sphere *sphere = node->getValue();
 
-  double r = (pt - sphere->center).sqrnorm();
-  double Ri = alpha * sphere->radius;
-  double fi = (r > Ri) ? 0 : pow(1 - pow(r / Ri, 2), 2);
-  I += fi;
+  I = calcValGradI(I, pt, *sphere, alpha);
 
   for (auto child : node->getChildren()) {
     I = getScalarFieldComponent(child, pt, I, alpha);
   }
 
   return I;
+}
+
+point3d Skeleton::evolve(point3d xt, double Itarget, float T, float alpha) {
+  ValGrad v = getScalarField(xt, T, alpha);
+  double I = v.val;
+  point3d deltaI = v.grad;
+  double k1 = 1; // TODO
+  double k2 = 1; // TODO
+  double f = 1 / (1 + abs(k1) + abs(k2));
+  double F = (I - Itarget) * f;
+  double Fmax = F; // TODO
+  double step =
+      1; // TODO : min{r_i}/pow(2, k) où k est le niveau de subdivision
+  double deltaT = step / Fmax;
+
+  deltaI.normalize();
+  return xt - deltaI * F * deltaT;
 }
 
 // merge

@@ -124,6 +124,13 @@ QString MyViewer::helpString() const {
   text += "<li>Ctrl + mouse right button double click   :   choose "
           "background color</li>";
   text += "<li>Ctrl + T   :   change window title</li>";
+  text += "<li>Shift + mouse left button click   :   select a node</li>";
+  text += "<li>A   :   generate a random skeleton, or add a node child to the "
+          "selected node, if any</li>";
+  text += "<li>I   :   interpolate</li>";
+  text += "<li>K   :   proceed stitching</li>";
+  text += "<li>S   :   get information about the scalar field";
+  text += "<li>E   :   proceed evolution</li>";
   text += "</ul>";
   return text;
 }
@@ -161,7 +168,10 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       }
     }
   } else if (event->key() == Qt::Key_S) {
-      point3d pt = skeleton.getScalarField(point3d(0,0,0));
+    ValGrad pt =
+        skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
+    std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
+              << "\tI gradient : " << pt.grad << std::endl;
   }
 }
 
