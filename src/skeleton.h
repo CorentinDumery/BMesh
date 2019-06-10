@@ -17,6 +17,7 @@ public:
 
   void stitching();
   inline Node *getRoot() const { return root; }
+  inline int getSubdivisionLevel() const { return subdivisionLevel; }
   void draw(const uint selectedId) const;
   void drawWithNames() const;
   void interpolate(bool constantDistance = false, int spheresPerEdge = 1,
@@ -31,6 +32,8 @@ public:
   void drawInterpolation() const;
   void generateRandom();
   void generateAnimal(int numSph=10);
+
+  int countNode(Node *node, int nb = 0);
 
   vector<Triangle> convexHull(vector<point3d> points);
   ValGrad getScalarField(point3d pt, float T = 0.3, float alpha = 1.5);
@@ -52,6 +55,7 @@ private:
   Node *root;
   vector<Sphere> interSpheres;
   vector<Quadrangle> hull;
+  int subdivisionLevel = 0; // useful for the evolve process
 
 };
 
