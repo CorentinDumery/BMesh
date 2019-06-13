@@ -37,21 +37,11 @@ void MyViewer::draw() {
   if (fillMode)
     glPolygonMode(GL_FRONT, GL_FILL);
   else
-    glPolygonMode(GL_FRONT, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
   skeleton.draw(selectedName());
-  skeleton.drawHull();
-  skeleton.myMesh.draw();
+  skeleton.hullMesh.draw();
   skeleton.drawInterpolation();
-
-  // TODO : remove
-  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-  skeleton.cube.draw();
-
-  // TODO : remove
-  Mesh m = CatmullClark::subdivision(skeleton.cube);
-  Mesh m1 = CatmullClark::subdivision(m);
-  Mesh m2 = CatmullClark::subdivision(m1);
-  m2.draw();
 
   // TODO: add a Mesh mode
   // mesh.draw();
@@ -147,6 +137,7 @@ QString MyViewer::helpString() const {
   text += "<li>S   :   get information about the scalar field";
   text += "<li>E   :   proceed evolution</li>";
   text += "<li>G   :   get diverse kind of information</li>";
+  text += "<li>C   :   apply a cattmull subdivision to the mesh hull</li>";
   text += "</ul>";
   return text;
 }
@@ -190,11 +181,11 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       }
     }
   } else if (event->key() == Qt::Key_S) {
-      /*
-    ValGrad pt =
-        skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
-    std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
-              << "\tI gradient : " << pt.grad << std::endl;*/
+    /*
+  ValGrad pt =
+      skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
+  std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
+            << "\tI gradient : " << pt.grad << std::endl;*/
   } else if (event->key() == Qt::Key_G) {
     //      int nbNode = skeleton.countNode(skeleton.getRoot());
     //      std::cout << "Nb Node : " << nbNode << std::endl;
@@ -205,6 +196,9 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
     double u = skeleton.getMinRadius(skeleton.getRoot(),
                                      skeleton.getRoot()->getValue()->radius);
     std::cout << "Minimal radius : " << u << std::endl;
+  } else if (event->key() == Qt::Key_C) {
+    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+    update();
   }
 }
 
