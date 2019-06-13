@@ -26,9 +26,9 @@
 #include <QLineEdit>
 #include <QToolBar>
 
+#include "node.h"
 #include "qt/QSmartAction.h"
 #include "skeleton.h"
-#include "node.h"
 
 class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   Q_OBJECT
@@ -45,38 +45,24 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
 public:
   MyViewer(QGLWidget *parent = nullptr)
       : QGLViewer(parent), QOpenGLFunctions_3_0() {}
-
   void add_actions_to_toolBar(QToolBar *toolBar);
-
   void draw() override;
-
   void drawWithNames() override { skeleton.drawWithNames(); }
-
   void postSelection(const QPoint &point) override;
-
   void pickBackgroundColor();
-
   void adjustCamera(point3d const &bb, point3d const &BB);
-
   void init() override;
-
   QString helpString() const override;
-
   void updateTitle(QString text) {
     this->setWindowTitle(text);
     emit windowTitleUpdated(text);
   }
-
   void keyPressEvent(QKeyEvent *event) override;
-
   void mouseDoubleClickEvent(QMouseEvent *e) override;
-
   void mousePressEvent(QMouseEvent *e) override {
     QGLViewer::mousePressEvent(e);
   }
-
   void mouseMoveEvent(QMouseEvent *e) override;
-
   void mouseReleaseEvent(QMouseEvent *e) override {
     QGLViewer::mouseReleaseEvent(e);
   }
@@ -87,20 +73,13 @@ signals:
 
 public slots:
   void addSphereToSkeleton(Sphere *sphere);
-
   void open_mesh();
-
   void save_mesh();
-
   void showControls();
-
   void saveCameraInFile(const QString &filename);
-
   void openCameraFromFile(const QString &filename);
-
   void openCamera();
   void saveCamera();
-
   void saveSnapShotPlusPlus();
 };
 

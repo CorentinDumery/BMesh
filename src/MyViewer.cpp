@@ -1,4 +1,5 @@
 #include "MyViewer.h"
+#include "catmullClark.h"
 
 void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   // Specify the actions :
@@ -41,6 +42,16 @@ void MyViewer::draw() {
   skeleton.drawHull();
   skeleton.myMesh.draw();
   skeleton.drawInterpolation();
+
+  // TODO : remove
+  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+  skeleton.cube.draw();
+
+  // TODO : remove
+  Mesh m = CatmullClark::subdivision(skeleton.cube);
+  Mesh m1 = CatmullClark::subdivision(m);
+  Mesh m2 = CatmullClark::subdivision(m1);
+  m2.draw();
 
   // TODO: add a Mesh mode
   // mesh.draw();

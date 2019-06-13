@@ -469,4 +469,8 @@ void SetAmbient(float r, float g, float b, float alpha) {
 
 void color4(unsigned int c_id) { glColor4fv(RGB::color4[c_id % RGB::nColor]); }
 
+void setDefaultColor() { glColor3f(0, 0.5, 0); }
+
+void setSelectedColor() { glColor3f(1.0, 0.5, 0); }
+
 } // namespace GLTools
