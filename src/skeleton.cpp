@@ -372,8 +372,34 @@ void Skeleton::stitching(Node *node, Quadrangle motherQuad, bool isRoot) {
     }
     vector<Triangle> tri = convexHull(points);
     for (int i = 0; i < tri.size(); i++) {
-      hull.push_back(Quadrangle(tri[i].a, tri[i].b, tri[i].c, tri[i].a));
-      // TODO merge triangles instead of displaying them as quadrangles
+      bool recognized = false;
+      for (int j = 0; j < facingSons.size(); j++) {
+        // checking whether a given quadrangle should be displayed or is inside
+        // the hull
+        float thresh = 0.001;
+        if ((tri[i].a - facingSons[j].a).norm() < thresh ||
+            (tri[i].a - facingSons[j].b).norm() < thresh ||
+            (tri[i].a - facingSons[j].c).norm() < thresh ||
+            (tri[i].a - facingSons[j].d).norm() < thresh) {
+          if ((tri[i].b - facingSons[j].a).norm() < thresh ||
+              (tri[i].b - facingSons[j].b).norm() < thresh ||
+              (tri[i].b - facingSons[j].c).norm() < thresh ||
+              (tri[i].b - facingSons[j].d).norm() < thresh) {
+            if ((tri[i].c - facingSons[j].a).norm() < thresh ||
+                (tri[i].c - facingSons[j].b).norm() < thresh ||
+                (tri[i].c - facingSons[j].c).norm() < thresh ||
+                (tri[i].c - facingSons[j].d).norm() < thresh) {
+
+              recognized = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!recognized)
+        hull.push_back(Quadrangle(tri[i].a, tri[i].b, tri[i].c, tri[i].a));
+      // note : pushing a triangle as a quadrangle here, but this problem is
+      // fixed by the toMesh function
     }
   }
 
@@ -607,40 +633,42 @@ DVect Skeleton::evolvePt(point3d xt, double k1, double k2, double Itarget,
 }
 
 void Skeleton::evolve(double Itarget, float T, float alpha) {
+  /*
 
-  std::vector<Vertex> m_vertices;
-  double Fmax = 0;
+std::vector<Vertex> m_vertices;
+double Fmax = 0;
 
-  for (unsigned int t = 0; t < myMesh.vertices.size(); ++t) {
+for (unsigned int t = 0; t < myMesh.vertices.size(); ++t) {
 
-    // TODO : modifier la ligne dessous dans l'appel pour bien avoir k1 et k2
-    // (ici j'ai supposé que k1 et k2 étaient rangés en duplets pour chaque
-    // vertices, de manière semblable à une liste de normales
+  // TODO : modifier la ligne dessous dans l'appel pour bien avoir k1 et k2
+  // (ici j'ai supposé que k1 et k2 étaient rangés en duplets pour chaque
+  // vertices, de manière semblable à une liste de normales
 
-    DVect dvect = evolvePt(
-        myMesh.vertices[t], myMesh.curvatures[t][0], myMesh.curvatues[t][1],
-        Itarget, T, alpha); // returns F (dvect.val) and normal*F (dvect.vect)
+  DVect dvect = evolvePt(
+      myMesh.vertices[t], myMesh.curvatures[t][0], myMesh.curvatues[t][1],
+      Itarget, T, alpha); // returns F (dvect.val) and normal*F (dvect.vect)
 
-    // update the find of Fmax
-    if (dvect.val > Fmax)
-      Fmax = dvect.val;
+  // update the find of Fmax
+  if (dvect.val > Fmax)
+    Fmax = dvect.val;
 
-    // register the normal*F part of the computation
-    Vertex v;
-    v.p = dvect.vect;
-    m_vertices.push_back(v);
-  }
+  // register the normal*F part of the computation
+  Vertex v;
+  v.p = dvect.vect;
+  m_vertices.push_back(v);
+}
 
-  double step =
-      getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
-  double deltaT = step / Fmax;
+double step =
+    getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
+double deltaT = step / Fmax;
 
-  for (unsigned int t = 0; t < m_vertices.size(); ++t) {
-    m_vertices[t].p = myMesh.vertices[t].p + m_vertices[t].p * deltaT;
-  }
+for (unsigned int t = 0; t < m_vertices.size(); ++t) {
+  m_vertices[t].p = myMesh.vertices[t].p + m_vertices[t].p * deltaT;
+}
 
-  // TODO : bien ranger m_vertices à sa place dans la fonction Mesh
-  // (remplacement de l'ancienne liste "vertices")
+// TODO : bien ranger m_vertices à sa place dans la fonction Mesh
+// (remplacement de l'ancienne liste "vertices")
+*/
 }
 
 // merge

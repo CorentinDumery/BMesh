@@ -179,10 +179,11 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       }
     }
   } else if (event->key() == Qt::Key_S) {
+      /*
     ValGrad pt =
         skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
     std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
-              << "\tI gradient : " << pt.grad << std::endl;
+              << "\tI gradient : " << pt.grad << std::endl;*/
   } else if (event->key() == Qt::Key_G) {
     //      int nbNode = skeleton.countNode(skeleton.getRoot());
     //      std::cout << "Nb Node : " << nbNode << std::endl;
