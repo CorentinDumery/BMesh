@@ -8,15 +8,14 @@
 
 Skeleton::Skeleton(Sphere *sphere) : root(new Node(sphere)) {
   // TODO: attention hardoceded
-//  root->addChild(new Sphere(point3d(0, -2, -2), 0.75));
-//  root->addChild(new Sphere(point3d(0, -2, 2), 0.75));
-//  root->getChildren()[0]->addChild(new Sphere(point3d(0, -6, -2), 0.5));
-//  root->getChildren()[1]->addChild(new Sphere(point3d(0, -6, +2), 0.5));
-//  root->addChild(new Sphere(point3d(0, 4, 0), 1));
-//  root->getChildren()[2]->addChild(new Sphere(point3d(0, 7, 0), 0.75));
-//  root->getChildren()[2]->addChild(new Sphere(point3d(2, 6, -4), 0.5));
-//  root->getChildren()[2]->addChild(new Sphere(point3d(2, 6, +4), 0.5));
-    cube = Mesh::generateCube(4);
+  root->addChild(new Sphere(point3d(0, -2, -2), 0.75));
+  root->addChild(new Sphere(point3d(0, -2, 2), 0.75));
+  root->getChildren()[0]->addChild(new Sphere(point3d(0, -6, -2), 0.5));
+  root->getChildren()[1]->addChild(new Sphere(point3d(0, -6, +2), 0.5));
+  root->addChild(new Sphere(point3d(0, 4, 0), 1));
+  root->getChildren()[2]->addChild(new Sphere(point3d(0, 7, 0), 0.75));
+  root->getChildren()[2]->addChild(new Sphere(point3d(2, 6, -4), 0.5));
+  root->getChildren()[2]->addChild(new Sphere(point3d(2, 6, +4), 0.5));
 }
 
 Skeleton::~Skeleton() { delete root; }
@@ -227,8 +226,8 @@ void Skeleton::stitching() {
   clearHull();
   point3d a = point3d(0, 0, 0);
   stitching(root, Quadrangle(a, a, a, a), true);
-  myMesh = toMesh(hull);
-  myMesh.mergeTriangles();
+  hullMesh = toMesh(hull);
+  hullMesh.mergeTriangles();
   hull.clear();
 }
 
