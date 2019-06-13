@@ -87,6 +87,8 @@ void setDefaultMaterial();
 void setInverseDefaultMaterial();
 void SetDiffuse(float r, float g, float b, float alpha);
 void SetAmbient(float r, float g, float b, float alpha);
+void setDefaultColor();
+void setSelectedColor();
 
 void color4(unsigned int c_id);
 } // namespace GLTools
