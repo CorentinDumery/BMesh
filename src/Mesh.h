@@ -2,7 +2,7 @@
 #define PROJECTMESH_H
 
 #include "point3.h"
-#include "utility.h"
+#include <cmath>
 #include <gl/GLUtilityMethods.h>
 #include <queue>
 #include <vector>
@@ -13,8 +13,15 @@ struct Vertex {
   point3d p;
   Vertex() {}
   Vertex(double x, double y, double z) : p(x, y, z) {}
+  Vertex(point3d p) : p(p) {}
   double &operator[](unsigned int c) { return p[c]; }
   double operator[](unsigned int c) const { return p[c]; }
+  bool operator==(const Vertex &v) const {
+    const double EPSILON = 0.00001;
+    return (abs(this->p.x() - v.p.x()) < EPSILON) &&
+           (abs(this->p.y() - v.p.y()) < EPSILON) &&
+           (abs(this->p.z() - v.p.z()) < EPSILON);
+  }
 };
 struct Triplet {
   unsigned int corners[3];
@@ -28,13 +35,41 @@ struct Quadruplet {
   unsigned int operator[](unsigned int c) const { return corners[c]; }
   unsigned int size() const { return 4; }
 };
-struct Mesh {
+class Mesh {
+public:
+    static Mesh generateCube(double edgeLength) {
+        Mesh cube;
+        cube.vertices = {
+            // Front
+            Vertex(-edgeLength,edgeLength,edgeLength),
+            Vertex(edgeLength,edgeLength,edgeLength),
+            Vertex(edgeLength,-edgeLength,edgeLength),
+            Vertex(-edgeLength,-edgeLength,edgeLength),
+
+            // Back
+            Vertex(-edgeLength,edgeLength,-edgeLength),
+            Vertex(edgeLength,edgeLength,-edgeLength),
+            Vertex(edgeLength,-edgeLength,-edgeLength),
+            Vertex(-edgeLength,-edgeLength,-edgeLength),
+        };
+        cube.quadrangles = {
+            {0,3,2,1},
+            {4,5,6,7},
+            {1,2,6,5},
+            {0,4,7,3},
+            {0,1,5,4},
+            {3,7,6,2}
+        };
+        return cube;
+    }
+
   std::vector<Vertex> vertices;
   std::vector<Triplet> triangles;
   vector<Quadruplet> quadrangles;
   void clear() {
     vertices.clear();
     triangles.clear();
+    quadrangles.clear();
   }
   void draw() {
     glBegin(GL_TRIANGLES);
@@ -227,9 +262,9 @@ public:
 
   void draw(const bool selected = false) const {
     if (selected)
-      setSelectedColor();
+      GLTools::setSelectedColor();
     else
-      setDefaultColor();
+      GLTools::setDefaultColor();
   }
 
   Shape(const Shape &) : Shape() {}

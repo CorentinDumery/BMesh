@@ -14,6 +14,9 @@ struct DVect {
 
 class Skeleton {
 public:
+  // TODO : ATTENTION remove it
+  Mesh cube;
+
   Skeleton(Sphere *sphere = new Sphere());
   ~Skeleton();
 
@@ -44,6 +47,8 @@ public:
   double getMinRadius(Node *node, double rad); // typically initialize with root and the radius of root's sphere
 
 private:
+  Node *root;
+
   void stitching(Node *node, Quadrangle motherQuad, bool isRoot = false);
   void draw(Node *node, const uint selectedId,
             const bool withName = false) const;
