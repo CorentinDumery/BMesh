@@ -128,6 +128,14 @@ QString MyViewer::helpString() const {
   text += "<li>Ctrl + mouse right button double click   :   choose "
           "background color</li>";
   text += "<li>Ctrl + T   :   change window title</li>";
+  text += "<li>Shift + mouse left button click   :   select a node</li>";
+  text += "<li>A   :   generate a random skeleton, or add a node child to the "
+          "selected node, if any</li>";
+  text += "<li>I   :   interpolate</li>";
+  text += "<li>K   :   proceed stitching</li>";
+  text += "<li>S   :   get information about the scalar field";
+  text += "<li>E   :   proceed evolution</li>";
+  text += "<li>G   :   get diverse kind of information</li>";
   text += "</ul>";
   return text;
 }
@@ -170,6 +178,21 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
         updateTitle(text);
       }
     }
+  } else if (event->key() == Qt::Key_S) {
+    ValGrad pt =
+        skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
+    std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
+              << "\tI gradient : " << pt.grad << std::endl;
+  } else if (event->key() == Qt::Key_G) {
+    //      int nbNode = skeleton.countNode(skeleton.getRoot());
+    //      std::cout << "Nb Node : " << nbNode << std::endl;
+
+    //      int subd = skeleton.getSubdivisionLevel();
+    //      std::cout << "Subd level : " << subd << std::endl;
+
+    double u = skeleton.getMinRadius(skeleton.getRoot(),
+                                     skeleton.getRoot()->getValue()->radius);
+    std::cout << "Minimal radius : " << u << std::endl;
   }
 }
 
