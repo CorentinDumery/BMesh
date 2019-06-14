@@ -57,7 +57,7 @@ private:
   void interpolate(Node *node, bool constantDistance = true,
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
 
-  Mesh toMesh(vector<Quadrangle> hull, float threshhold = 0.001);
+  Mesh toMesh(vector<Quadrangle> hull, float threshhold = 0.01);
   DVect getScalarFieldComponent(Node *node, point3d pt, DVect I,
                                 float alpha = 1.5);
   DVect calcValGradI(DVect I, point3d pt, Sphere sphere, float alpha);

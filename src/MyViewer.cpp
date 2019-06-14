@@ -33,15 +33,16 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
 void MyViewer::draw() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
-  glColor3f(0.5, 0.5, 0.8);
+  glColor3f(0.0, 0.5, 0.0);
   if (fillMode)
     glPolygonMode(GL_FRONT, GL_FILL);
   else
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-  skeleton.draw(selectedName());
   skeleton.hullMesh.draw();
+  if (displaySpheres) {
+  skeleton.draw(selectedName());
   skeleton.drawInterpolation();
+  }
 
   // TODO: add a Mesh mode
   // mesh.draw();
@@ -162,6 +163,9 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
   } else if (event->key() == Qt::Key_N) {
     fillMode = !fillMode;
     update();
+  } else if (event->key() == Qt::Key_B) {
+    displaySpheres = !displaySpheres;
+    update();
   } else if (event->key() == Qt::Key_K) {
     skeleton.stitching();
     update();
@@ -180,12 +184,12 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
         updateTitle(text);
       }
     }
-  } else if (event->key() == Qt::Key_S) {
-    /*
-  ValGrad pt =
-      skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
-  std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
-            << "\tI gradient : " << pt.grad << std::endl;*/
+  } else if (event->key() == Qt::Key_D) {
+
+    DVect pt =
+        skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
+    std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
+              << "\tI gradient : " << pt.vect << std::endl;
   } else if (event->key() == Qt::Key_G) {
     //      int nbNode = skeleton.countNode(skeleton.getRoot());
     //      std::cout << "Nb Node : " << nbNode << std::endl;
