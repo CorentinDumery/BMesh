@@ -66,6 +66,10 @@ public:
   std::vector<Vertex> vertices;
   std::vector<Triplet> triangles;
   vector<Quadruplet> quadrangles;
+  vector<float> curvatures;
+  vector<float> surroundingAreas;
+  bool showCurvature = true;
+
   void clear() {
     vertices.clear();
     triangles.clear();
@@ -92,9 +96,13 @@ public:
       point3d const &p3 = vertices[quadrangles[t][3]].p;
       point3d const &n = point3d::cross(p1 - p0, p2 - p0).direction();
       glNormal3f(n[0], n[1], n[2]);
+      if (showCurvature) glColor3f(curvatures[quadrangles[t][0]], 0.5, curvatures[quadrangles[t][0]]); // TODO remove
       glVertex3f(p0[0], p0[1], p0[2]);
+      if (showCurvature) glColor3f(curvatures[quadrangles[t][1]], 0.5, curvatures[quadrangles[t][1]]);
       glVertex3f(p1[0], p1[1], p1[2]);
+      if (showCurvature) glColor3f(curvatures[quadrangles[t][2]], 0.5, curvatures[quadrangles[t][2]]);
       glVertex3f(p2[0], p2[1], p2[2]);
+      if (showCurvature) glColor3f(curvatures[quadrangles[t][3]], 0.5, curvatures[quadrangles[t][3]]);
       glVertex3f(p3[0], p3[1], p3[2]);
     }
     glEnd();
@@ -132,7 +140,7 @@ public:
 
     float bestScore = pow(2, 15);
 
-    while (bestScore > stopThreshold && !triangles.empty()) {
+    while (bestScore > stopThreshold && triangles.size()>1) {
       int best1 = -1, best2 = -1;
       Quadruplet futureQuad;
       bestScore = 0;
@@ -213,7 +221,7 @@ public:
             bestScore = score;
             best1 = i1;
             best2 = i2;
-            for (int z = 0; z < 3; z++) { //finding the counter-clockwise order
+            for (int z = 0; z < 3; z++) { // finding the counter-clockwise order
               if ((triangles[i1][z] == v1 || triangles[i1][z] == v2) &&
                   (triangles[i1][(z + 1) % 3] == v1 ||
                    triangles[i1][(z + 1) % 3] == v2))
@@ -231,6 +239,80 @@ public:
       triangles.erase(triangles.begin() + best1);
 
     } // end of while (bestScore > threshold)
+  }
+
+  void computeSurroundingAreas() {
+    surroundingAreas.clear();
+    surroundingAreas.resize(vertices.size(), 0);
+    for (int i = 0; i < triangles.size(); i++) {
+      float a, b, c;
+      a = (vertices[triangles[i][0]].p - vertices[triangles[i][1]].p).norm();
+      b = (vertices[triangles[i][0]].p - vertices[triangles[i][2]].p).norm();
+      c = (vertices[triangles[i][1]].p - vertices[triangles[i][2]].p).norm();
+      // Heron's formula
+      float s = (a + b + c) / 2;
+      float area = sqrt(s * (s - a) * (s - b) * (s - c));
+      // This is an approximation of Voronoi's area.
+      surroundingAreas[triangles[i][0]] += area / 3;
+      surroundingAreas[triangles[i][1]] += area / 3;
+      surroundingAreas[triangles[i][2]] += area / 3;
+    }
+    for (int i = 0; i < quadrangles.size(); i++) {
+      // Also an approximation
+      float area = (vertices[quadrangles[i][0]].p - vertices[quadrangles[i][1]].p).norm() *
+             (vertices[quadrangles[i][0]].p - vertices[quadrangles[i][3]].p).norm();
+      surroundingAreas[quadrangles[i][0]] += area/4;
+      surroundingAreas[quadrangles[i][1]] += area/4;
+      surroundingAreas[quadrangles[i][2]] += area/4;
+      surroundingAreas[quadrangles[i][3]] += area/4;
+    }
+  }
+
+  void computeCurvaturesNorm() {
+    // This function computes k1^k1 + k2*k2 and stores it in "curvatures"
+
+    // "How ?" will you ask me.
+    // We will compute :
+    //   - the mean curvature H
+    //   - the gaussian curvature G
+    // Then we will use k1^2 + k2^2 = (2H)^2 - 2G
+
+    if (vertices.size()==0) return;
+    computeSurroundingAreas();
+    curvatures.clear();
+    curvatures.resize(vertices.size(), 0);
+
+    // Gaussian curvature : angle deficit
+    // We will temporarily store the angles' sum in curvature
+
+    /* // TODO check : are there still triangles ?
+    for (int i = 0; i < triangles.size(); i++) {
+      point3d p0 = vertices[triangles[i][0]].p;
+      point3d p1 = vertices[triangles[i][1]].p;
+      point3d p2 = vertices[triangles[i][2]].p;
+      curvatures[triangles[i][0]] += computeAngle(p0 - p1, p0 - p2);
+      curvatures[triangles[i][1]] += computeAngle(p1 - p0, p1 - p2);
+      curvatures[triangles[i][2]] += computeAngle(p2 - p0, p2 - p1);
+    }*/
+
+    for (int i=0;i<quadrangles.size();i++){
+        point3d p0 = vertices[quadrangles[i][0]].p;
+        point3d p1 = vertices[quadrangles[i][1]].p;
+        point3d p2 = vertices[quadrangles[i][2]].p;
+        point3d p3 = vertices[quadrangles[i][3]].p;
+        curvatures[quadrangles[i][0]] += computeAngle(p0-p1,p0-p3);
+        curvatures[quadrangles[i][1]] += computeAngle(p1-p0,p1-p2);
+        curvatures[quadrangles[i][2]] += computeAngle(p2-p1,p2-p3);
+        curvatures[quadrangles[i][3]] += computeAngle(p3-p0,p3-p2);
+    }
+
+    for (int i = 0; i < curvatures.size(); i++) {
+      curvatures[i] = (2*3.1416 - curvatures[i])/surroundingAreas[i];
+    }
+
+    // Mean curvature : cotangeant weigths
+
+    // TODO compute mean curvature
   }
 };
 

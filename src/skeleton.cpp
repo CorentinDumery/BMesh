@@ -249,8 +249,6 @@ void Skeleton::stitching(Node *node, Quadrangle motherQuad, bool isRoot) {
   Sphere sphere = *node->getValue();
 
   double r = sphere.radius;
-  // Quadrangle facingMom = Quadrangle(point3d(0, 0, 0), point3d(0, 0, 0),
-  //                                  point3d(0, 0, 0), point3d(0, 0, 0));
 
   vector<Quadrangle> facingSons;
   // Convention : facingSons[0] représente celui vers la mère
@@ -338,7 +336,7 @@ void Skeleton::stitching(Node *node, Quadrangle motherQuad, bool isRoot) {
       point3d milieu = sphere.center + directions[i] * sphere.radius;
       point3d a, b, c, d, x, y, z;
       x = directions[i];
-      if (!isRoot && i == 0) {
+      if (!isRoot && i == 0) { //align with mom
         y = motherQuad.a - motherQuad.d;
         z = motherQuad.a - motherQuad.b;
       } else if (fabs(x.x()) > 0.01 ||
@@ -365,7 +363,6 @@ void Skeleton::stitching(Node *node, Quadrangle motherQuad, bool isRoot) {
         facingSons.push_back(Quadrangle(a, b, c, d));
       }
 
-      // TODO dont draw useless faces that correspond to facingSons
       points.push_back(a);
       points.push_back(b);
       points.push_back(c);
@@ -449,8 +446,6 @@ vector<Triangle> Skeleton::convexHull(vector<point3d> points) {
   // Add the furthest point from that plane.
   // Assignment (optional): remove inside points, and assign each left v to
   // its closest face on the current solution
-  //
-
   // note : this implementation crashes if "vertices" is n times the same vertex
 
   for (int i = 0; i < mesh.nindices; i += 3) {
@@ -472,6 +467,8 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshold) {
 
   // On crée un vector idVec de taille 4*hull.size()
   // idVec[i] donne l'id attribuée au vertex i dans le Mesh en output
+  // Cette fonction corrige les défauts de précision de l'implémentation de quickhull
+  //
   //
   // Pour chaque Quadriplet,
   //   Pour les 4 sommets,
@@ -539,6 +536,7 @@ Mesh Skeleton::toMesh(vector<Quadrangle> hull, float threshold) {
         Quadruplet qu = {idVec[quadNumber * 4], idVec[quadNumber * 4 + 1],
                          idVec[quadNumber * 4 + 2], idVec[quadNumber * 4 + 3]};
         quadrangles.push_back(qu);
+        break;
       }
     }
   }
@@ -572,9 +570,10 @@ DVect Skeleton::getScalarField(point3d pt, float T, float alpha) {
 
 DVect Skeleton::calcValGradI(DVect I, point3d pt, Sphere sphere, float alpha) {
 
-  double r = (pt - sphere.center).sqrnorm();
+  double r = (pt - sphere.center).norm();
   double Ri = alpha * sphere.radius;
   double fi = (r > Ri) ? 0 : pow(1 - pow(r / Ri, 2), 2);
+  // TODO check next line, should multiply by -r
   double dfi = (r > Ri) ? 0 : 4 / pow(sphere.radius, 2) * (1 - pow(r / Ri, 2));
   I.val += fi;
   I.vect += dfi * (pt - sphere.center);
@@ -597,9 +596,7 @@ DVect Skeleton::getScalarFieldComponent(Node *node, point3d pt, DVect I,
 }
 
 int Skeleton::countNode(Node *node, int nb) {
-
   nb += 1;
-
   for (auto child : node->getChildren()) {
     nb = countNode(child, nb);
   }
@@ -633,43 +630,38 @@ DVect Skeleton::evolvePt(point3d xt, double k1, double k2, double Itarget,
   return DVect(F, deltaI * F);
 }
 
-void Skeleton::evolve(double Itarget, float T, float alpha) {
-  /*
+void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold) {
+  //*
+  vector<Vertex> m_vertices;
+  double Fmax = 0;
 
-std::vector<Vertex> m_vertices;
-double Fmax = 0;
+  for (unsigned int t = 0; t < myMesh.vertices.size(); ++t) {
 
-for (unsigned int t = 0; t < myMesh.vertices.size(); ++t) {
+    DVect dvect = evolvePt(
+        myMesh.vertices[t], myMesh.curvatures[t], myMesh.curvatures[t], Itarget,
+        T, alpha); // returns F (dvect.val) and normal*F (dvect.vect)
 
-  // TODO : modifier la ligne dessous dans l'appel pour bien avoir k1 et k2
-  // (ici j'ai supposé que k1 et k2 étaient rangés en duplets pour chaque
-  // vertices, de manière semblable à une liste de normales
+    // update Fmax
+    if (dvect.val > Fmax)
+      Fmax = dvect.val;
 
-  DVect dvect = evolvePt(
-      myMesh.vertices[t], myMesh.curvatures[t][0], myMesh.curvatues[t][1],
-      Itarget, T, alpha); // returns F (dvect.val) and normal*F (dvect.vect)
+    Vertex v;
+    v.p = dvect.vect;
+    m_vertices.push_back(v);
+  }
 
-  // update the find of Fmax
-  if (dvect.val > Fmax)
-    Fmax = dvect.val;
+  double step =
+      getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
+  double deltaT = step / Fmax;
 
-  // register the normal*F part of the computation
-  Vertex v;
-  v.p = dvect.vect;
-  m_vertices.push_back(v);
-}
+  for (unsigned int t = 0; t < m_vertices.size(); ++t) {
+    m_vertices[t].p = myMesh.vertices[t].p + m_vertices[t].p * deltaT;
+  }
 
-double step =
-    getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
-double deltaT = step / Fmax;
+  // TODO : bien ranger m_vertices à sa place dans la fonction Mesh
+  // (remplacement de l'ancienne liste "vertices")
 
-for (unsigned int t = 0; t < m_vertices.size(); ++t) {
-  m_vertices[t].p = myMesh.vertices[t].p + m_vertices[t].p * deltaT;
-}
-
-// TODO : bien ranger m_vertices à sa place dans la fonction Mesh
-// (remplacement de l'ancienne liste "vertices")
-*/
+  //*/
 }
 
 // merge
