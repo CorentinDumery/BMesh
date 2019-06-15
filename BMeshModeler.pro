@@ -20,7 +20,8 @@ HEADERS += ./src/point3.h \
     src/skeleton.h \
     src/mediator.h \
     src/quickhull.h \
-    src/catmullClark.h
+    src/catmullClark.h \
+    src/utility.h
 SOURCES += ./src/main.cpp \
     ./src/gl/GLUtilityMethods.cpp\
     ./src/gl/BasicColors.cpp \

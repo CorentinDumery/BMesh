@@ -37,11 +37,13 @@ void MyViewer::draw() {
   if (fillMode)
     glPolygonMode(GL_FRONT, GL_FILL);
   else
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT, GL_LINE);
   skeleton.hullMesh.draw();
+  // TODO parameter to see normals
+  //skeleton.hullMesh.drawNormals();
   if (displaySpheres) {
-  skeleton.draw(selectedName());
-  skeleton.drawInterpolation();
+    skeleton.draw(selectedName());
+    skeleton.drawInterpolation();
   }
 
   // TODO: add a Mesh mode
@@ -160,6 +162,9 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
   } else if (event->key() == Qt::Key_S) {
     skeleton.generateStar();
     update();
+  } else if (event->key() == Qt::Key_E) {
+    skeleton.evolve(0.1,0.1,2,1);
+    update();
   } else if (event->key() == Qt::Key_N) {
     fillMode = !fillMode;
     update();
@@ -171,6 +176,10 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
     update();
   } else if (event->key() == Qt::Key_I) {
     skeleton.interpolate();
+    update();
+  } else if (event->key() == Qt::Key_L) {
+    skeleton.hullMesh.computeCurvaturesNorm();
+    skeleton.hullMesh.showCurvature = true;
     update();
   } else if (event->key() == Qt::Key_H) {
     help();
@@ -201,7 +210,7 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
                                      skeleton.getRoot()->getValue()->radius);
     std::cout << "Minimal radius : " << u << std::endl;
   } else if (event->key() == Qt::Key_C) {
-    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+    // skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
     update();
   }
 }
