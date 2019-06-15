@@ -24,8 +24,8 @@ public:
   inline int getSubdivisionLevel() const { return subdivisionLevel; }
   void draw(const uint selectedId) const;
   void drawWithNames() const;
-  void interpolate(bool constantDistance = false, int spheresPerEdge = 1,
-                   float spheresPerUnit = 1);
+  void interpolate(bool constantDistance = true, int spheresPerEdge = 1,
+                   float spheresPerUnit = 0.5);
   Node *find(const uint selectedId) const;
 
   void drawHull();
@@ -36,9 +36,9 @@ public:
 
   vector<Triangle> convexHull(vector<point3d> points);
   DVect getScalarField(point3d pt, float T = 0.3, float alpha = 1.5);
-  DVect evolvePt(point3d xt, double k1, double k2, double Itarget,
+  double F(point3d xt, double k1, double k2, double Itarget,
                  float T = 0.3, float alpha = 1.5);
-  void evolve(double Itarget, float T = 0.3, float alpha = 1.5);
+  void evolve(double Itarget, float T = 0.3, float alpha = 1.5, float errorThreshold=1);
 
   int countNode(Node *node, int nb = 0);
   double getMinRadius(Node *node,
@@ -57,7 +57,7 @@ private:
   void interpolate(Node *node, bool constantDistance = true,
                    int spheresPerEdge = 1, float spheresPerUnit = 1);
 
-  Mesh toMesh(vector<Quadrangle> hull, float threshhold = 0.01);
+  Mesh toMesh(vector<Quadrangle> hull, float threshhold = 0.1);
   DVect getScalarFieldComponent(Node *node, point3d pt, DVect I,
                                 float alpha = 1.5);
   DVect calcValGradI(DVect I, point3d pt, Sphere sphere, float alpha);

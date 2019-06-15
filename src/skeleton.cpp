@@ -169,14 +169,6 @@ void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
   interSpheres.clear();
   interpolate(getRoot(), constantDistance, spheresPerEdge, spheresPerUnit);
 
-  // for the evolve process
-  if (constantDistance) {
-    // approximation of the level of subdivision
-    int nbNode = countNode(getRoot());
-    subdivisionLevel = (int)(interSpheres.size() / nbNode);
-  } else {
-    subdivisionLevel = spheresPerEdge;
-  }
 }
 
 void Skeleton::interpolate(Node *node, bool constantDistance,
@@ -618,7 +610,7 @@ double Skeleton::getMinRadius(Node *node, double rad) {
   return rad;
 }
 
-DVect Skeleton::evolvePt(point3d xt, double k1, double k2, double Itarget,
+double Skeleton::F(point3d xt, double k1, double k2, double Itarget,
                          float T, float alpha) {
   DVect v = getScalarField(xt, T, alpha);
   double I = v.val;
@@ -627,36 +619,62 @@ DVect Skeleton::evolvePt(point3d xt, double k1, double k2, double Itarget,
   double F = (I - Itarget) * f;
 
   deltaI.normalize();
-  return DVect(F, deltaI * F);
+  //return DVect(F, deltaI * F);
+  return F;
 }
 
 void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold) {
+
+  bool checkUp = true;
+
   //*
-  vector<Vertex> m_vertices;
-  double Fmax = 0;
-
-  for (unsigned int t = 0; t < myMesh.vertices.size(); ++t) {
-
-    DVect dvect = evolvePt(
-        myMesh.vertices[t], myMesh.curvatures[t], myMesh.curvatures[t], Itarget,
+  //Computing Fmax :
+  double Fmax = -pow(2,15);
+  hullMesh.computeCurvaturesNorm(); // TODO compute before evolve call ?
+  for (unsigned int t = 0; t < hullMesh.vertices.size(); ++t) {
+    double dvect = F(
+        hullMesh.vertices[t], hullMesh.curvatures[t], hullMesh.curvatures[t], Itarget,
         T, alpha); // returns F (dvect.val) and normal*F (dvect.vect)
-
     // update Fmax
-    if (dvect.val > Fmax)
-      Fmax = dvect.val;
+    cout << "  F = "<<dvect << endl;
+    if (dvect > Fmax){
+        if (isinf(dvect)){
+            cout << "Error, infinite scalar field" << endl;
+        }
+        else Fmax = dvect;
+    }
 
-    Vertex v;
-    v.p = dvect.vect;
-    m_vertices.push_back(v);
+    //Vertex v;
+    //v.p = dvect.vect;
+    //m_vertices.push_back(v);
   }
 
+
+  // TODO check catmull increments subdivision level
   double step =
       getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
   double deltaT = step / Fmax;
-
-  for (unsigned int t = 0; t < m_vertices.size(); ++t) {
-    m_vertices[t].p = myMesh.vertices[t].p + m_vertices[t].p * deltaT;
+  if (checkUp){
+    cout <<" --- " << endl;
+    cout <<" step " << step << endl;
+    cout <<" Fmax " << Fmax << endl;
+    cout <<" DeltaT " << deltaT << endl;
+    cout <<" --- " << endl;
   }
+
+  //TODO iterate this
+  vector<Vertex> newVertices;
+  //hullMesh.computeNormals();
+  hullMesh.computeCurvaturesNorm();
+  for (int v;v<hullMesh.vertices.size();v++){
+    Vertex v2;
+    double f = F(hullMesh.vertices[v].p,hullMesh.curvatures[v],hullMesh.curvatures[v],Itarget,T,alpha);
+    point3d n = getScalarField(hullMesh.vertices[v].p,T,alpha).vect;
+    n.normalize();
+    v2.p = hullMesh.vertices[v].p + deltaT*n*f;
+    newVertices.push_back(v2);
+  }
+  hullMesh.vertices = newVertices;
 
   // TODO : bien ranger m_vertices à sa place dans la fonction Mesh
   // (remplacement de l'ancienne liste "vertices")

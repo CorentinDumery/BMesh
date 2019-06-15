@@ -2,6 +2,7 @@
 #define PROJECTMESH_H
 
 #include "point3.h"
+#include "utility.h"
 #include <cmath>
 #include <gl/GLUtilityMethods.h>
 #include <queue>
@@ -37,38 +38,33 @@ struct Quadruplet {
 };
 class Mesh {
 public:
-    static Mesh generateCube(double edgeLength) {
-        Mesh cube;
-        cube.vertices = {
-            // Front
-            Vertex(-edgeLength,edgeLength,edgeLength),
-            Vertex(edgeLength,edgeLength,edgeLength),
-            Vertex(edgeLength,-edgeLength,edgeLength),
-            Vertex(-edgeLength,-edgeLength,edgeLength),
+  static Mesh generateCube(double edgeLength) {
+    Mesh cube;
+    cube.vertices = {
+        // Front
+        Vertex(-edgeLength, edgeLength, edgeLength),
+        Vertex(edgeLength, edgeLength, edgeLength),
+        Vertex(edgeLength, -edgeLength, edgeLength),
+        Vertex(-edgeLength, -edgeLength, edgeLength),
 
-            // Back
-            Vertex(-edgeLength,edgeLength,-edgeLength),
-            Vertex(edgeLength,edgeLength,-edgeLength),
-            Vertex(edgeLength,-edgeLength,-edgeLength),
-            Vertex(-edgeLength,-edgeLength,-edgeLength),
-        };
-        cube.quadrangles = {
-            {0,3,2,1},
-            {4,5,6,7},
-            {1,2,6,5},
-            {0,4,7,3},
-            {0,1,5,4},
-            {3,7,6,2}
-        };
-        return cube;
-    }
+        // Back
+        Vertex(-edgeLength, edgeLength, -edgeLength),
+        Vertex(edgeLength, edgeLength, -edgeLength),
+        Vertex(edgeLength, -edgeLength, -edgeLength),
+        Vertex(-edgeLength, -edgeLength, -edgeLength),
+    };
+    cube.quadrangles = {{0, 3, 2, 1}, {4, 5, 6, 7}, {1, 2, 6, 5},
+                        {0, 4, 7, 3}, {0, 1, 5, 4}, {3, 7, 6, 2}};
+    return cube;
+  }
 
   std::vector<Vertex> vertices;
   std::vector<Triplet> triangles;
   vector<Quadruplet> quadrangles;
+  vector<point3d> normals;
   vector<float> curvatures;
   vector<float> surroundingAreas;
-  bool showCurvature = true;
+  bool showCurvature = false;
 
   void clear() {
     vertices.clear();
@@ -96,16 +92,65 @@ public:
       point3d const &p3 = vertices[quadrangles[t][3]].p;
       point3d const &n = point3d::cross(p1 - p0, p2 - p0).direction();
       glNormal3f(n[0], n[1], n[2]);
-      if (showCurvature) glColor3f(curvatures[quadrangles[t][0]], 0.5, curvatures[quadrangles[t][0]]); // TODO remove
+      if (showCurvature)
+        glColor3f(curvatures[quadrangles[t][0]], 0.5,
+                  curvatures[quadrangles[t][0]]);
       glVertex3f(p0[0], p0[1], p0[2]);
-      if (showCurvature) glColor3f(curvatures[quadrangles[t][1]], 0.5, curvatures[quadrangles[t][1]]);
+      if (showCurvature)
+        glColor3f(curvatures[quadrangles[t][1]], 0.5,
+                  curvatures[quadrangles[t][1]]);
       glVertex3f(p1[0], p1[1], p1[2]);
-      if (showCurvature) glColor3f(curvatures[quadrangles[t][2]], 0.5, curvatures[quadrangles[t][2]]);
+      if (showCurvature)
+        glColor3f(curvatures[quadrangles[t][2]], 0.5,
+                  curvatures[quadrangles[t][2]]);
       glVertex3f(p2[0], p2[1], p2[2]);
-      if (showCurvature) glColor3f(curvatures[quadrangles[t][3]], 0.5, curvatures[quadrangles[t][3]]);
+      if (showCurvature)
+        glColor3f(curvatures[quadrangles[t][3]], 0.5,
+                  curvatures[quadrangles[t][3]]);
       glVertex3f(p3[0], p3[1], p3[2]);
     }
     glEnd();
+  }
+
+  void computeNormals(){
+        // TODO improve accuracy of this function
+        normals.resize(vertices.size(),point3d(0,0,0));
+        for (auto tri : triangles){
+            point3d n = point3<float>::cross(vertices[tri.corners[0]].p-vertices[tri.corners[1]].p,vertices[tri.corners[0]].p-vertices[tri.corners[2]].p);
+            n.normalize();
+            for (auto i:tri.corners){
+                normals[i] += n;
+            }
+        }
+        for (auto quad : quadrangles){
+            point3d n = point3<float>::cross(vertices[quad.corners[0]].p-vertices[quad.corners[1]].p,vertices[quad.corners[0]].p-vertices[quad.corners[2]].p);
+            n.normalize();
+            for (auto i:quad.corners){
+                normals[i] += n;
+            }
+        }
+        for (int i =0;i<normals.size();i++){
+            normals[i].normalize();
+        }
+    }
+
+    void drawNormals(){
+        computeNormals();
+        for (int i =0;i<normals.size();i++){
+
+            point3d z = point3d::cross(normals[i],point3d(1,2.2,3.1));
+            z.normalize();
+            z = (z-normals[i])/2;
+            point3d zp = (-z-normals[i])/2;
+            z.normalize();
+            zp.normalize();
+            point3d a =vertices[i].p, b=vertices[i].p+normals[i];
+            point3d c =b+z/5,d=b+zp/5;
+            BasicGL::drawLine(a,b);
+            BasicGL::drawLine(c,b);
+            BasicGL::drawLine(d,b);
+        }
+
   }
 
   void mergeTriangles(float stopThreshold = 1) {
@@ -140,7 +185,7 @@ public:
 
     float bestScore = pow(2, 15);
 
-    while (bestScore > stopThreshold && triangles.size()>1) {
+    while (bestScore > stopThreshold && triangles.size() > 1) {
       int best1 = -1, best2 = -1;
       Quadruplet futureQuad;
       bestScore = 0;
@@ -259,13 +304,24 @@ public:
     }
     for (int i = 0; i < quadrangles.size(); i++) {
       // Also an approximation
-      float area = (vertices[quadrangles[i][0]].p - vertices[quadrangles[i][1]].p).norm() *
-             (vertices[quadrangles[i][0]].p - vertices[quadrangles[i][3]].p).norm();
-      surroundingAreas[quadrangles[i][0]] += area/4;
-      surroundingAreas[quadrangles[i][1]] += area/4;
-      surroundingAreas[quadrangles[i][2]] += area/4;
-      surroundingAreas[quadrangles[i][3]] += area/4;
+      float area =
+          (vertices[quadrangles[i][0]].p - vertices[quadrangles[i][1]].p)
+              .norm() *
+          (vertices[quadrangles[i][0]].p - vertices[quadrangles[i][3]].p)
+              .norm();
+      surroundingAreas[quadrangles[i][0]] += area / 4;
+      surroundingAreas[quadrangles[i][1]] += area / 4;
+      surroundingAreas[quadrangles[i][2]] += area / 4;
+      surroundingAreas[quadrangles[i][3]] += area / 4;
     }
+  }
+
+  float computeAngle(point3d p1, point3d p2) {
+    if (p1.norm() == 0 || p2.norm() == 0) {
+      cout << "Error : angle cannot be computed" << endl;
+      return 0;
+    }
+    return acos(point3d::dot(p1, p2) / (p1.norm() * p2.norm()));
   }
 
   void computeCurvaturesNorm() {
@@ -277,7 +333,8 @@ public:
     //   - the gaussian curvature G
     // Then we will use k1^2 + k2^2 = (2H)^2 - 2G
 
-    if (vertices.size()==0) return;
+    if (vertices.size() == 0)
+      return;
     computeSurroundingAreas();
     curvatures.clear();
     curvatures.resize(vertices.size(), 0);
@@ -295,19 +352,19 @@ public:
       curvatures[triangles[i][2]] += computeAngle(p2 - p0, p2 - p1);
     }*/
 
-    for (int i=0;i<quadrangles.size();i++){
-        point3d p0 = vertices[quadrangles[i][0]].p;
-        point3d p1 = vertices[quadrangles[i][1]].p;
-        point3d p2 = vertices[quadrangles[i][2]].p;
-        point3d p3 = vertices[quadrangles[i][3]].p;
-        curvatures[quadrangles[i][0]] += computeAngle(p0-p1,p0-p3);
-        curvatures[quadrangles[i][1]] += computeAngle(p1-p0,p1-p2);
-        curvatures[quadrangles[i][2]] += computeAngle(p2-p1,p2-p3);
-        curvatures[quadrangles[i][3]] += computeAngle(p3-p0,p3-p2);
+    for (int i = 0; i < quadrangles.size(); i++) {
+      point3d p0 = vertices[quadrangles[i][0]].p;
+      point3d p1 = vertices[quadrangles[i][1]].p;
+      point3d p2 = vertices[quadrangles[i][2]].p;
+      point3d p3 = vertices[quadrangles[i][3]].p;
+      curvatures[quadrangles[i][0]] += computeAngle(p0 - p1, p0 - p3);
+      curvatures[quadrangles[i][1]] += computeAngle(p1 - p0, p1 - p2);
+      curvatures[quadrangles[i][2]] += computeAngle(p2 - p1, p2 - p3);
+      curvatures[quadrangles[i][3]] += computeAngle(p3 - p0, p3 - p2);
     }
 
     for (int i = 0; i < curvatures.size(); i++) {
-      curvatures[i] = (2*3.1416 - curvatures[i])/surroundingAreas[i];
+      curvatures[i] = (2 * 3.1416 - curvatures[i]) / surroundingAreas[i];
     }
 
     // Mean curvature : cotangeant weigths
