@@ -1,5 +1,5 @@
-#ifndef UTILITY_H
-#define UTILITY_H
+#ifndef CATMULLCLARK_H
+#define CATMULLCLARK_H
 
 #include "Mesh.h"
 #include <unordered_map>
