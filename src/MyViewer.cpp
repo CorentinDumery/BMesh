@@ -210,7 +210,7 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
                                      skeleton.getRoot()->getValue()->radius);
     std::cout << "Minimal radius : " << u << std::endl;
   } else if (event->key() == Qt::Key_C) {
-    // skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+     skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
     update();
   }
 }
