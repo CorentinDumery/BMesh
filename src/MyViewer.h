@@ -29,7 +29,6 @@
 #include "node.h"
 #include "qt/QSmartAction.h"
 #include "skeleton.h"
-#include "catmullClark.h"
 
 class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   Q_OBJECT

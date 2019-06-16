@@ -83,7 +83,7 @@ Mesh CatmullClark::subdivision(const Mesh &mesh) {
       point3d b = newPoints[face[i]];
       point3d c = EP[getEdgeKey(face[i], face[i + 1])].first;
       point3d d = newPoints[face[i + 1]];
-      insertNewFace(subdividedMesh, a, b, c, d);
+      insertNewFace(subdividedMesh, a, d, c, b);
     }
   }
 
@@ -110,7 +110,8 @@ string CatmullClark::getEdgeKey(uint a, uint b) {
 }
 
 void CatmullClark::insertEdge(unordered_map<string, pair<point3d, uint>> &EP,
-                            string key, const point3d &ep, const point3d &fp) {
+                              string key, const point3d &ep,
+                              const point3d &fp) {
   auto epSearch = EP.find(key);
   if (epSearch != EP.end()) {
     EP[key].second++;
@@ -137,10 +138,11 @@ pair<uint, uint> CatmullClark::extractEdgeFromKey(const string &key) {
 }
 
 void CatmullClark::insertNewFace(Mesh &mesh, point3d a, point3d b, point3d c,
-                               point3d d) {
+                                 point3d d) {
   Quadruplet quadInit;
 
-  // TODO : Carreful this is unefficient (I'm checking all vertice before adding one to avoid duplicate point)
+  // TODO : Carreful this is unefficient (I'm checking all vertice before adding
+  // one to avoid duplicate point)
   int indexA = -1;
   int indexB = -1;
   int indexC = -1;
