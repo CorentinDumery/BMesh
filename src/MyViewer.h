@@ -40,6 +40,10 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   bool fillMode = true;
   bool displaySpheres = true;
 
+  // TODO add parameters to the interface
+  float Itarget = 0.1;
+  float T = 0.1 ;
+
   qglviewer::Vec cursorPos, orig, dir;
 
   QWidget *controls;

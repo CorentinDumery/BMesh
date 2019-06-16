@@ -163,11 +163,31 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
     skeleton.generateStar();
     update();
   } else if (event->key() == Qt::Key_E) {
-    skeleton.evolve(0.1,0.1,2,1);
+    skeleton.evolve(Itarget,T,2,1);
+    update();
+  } else if (event->key() == Qt::Key_F) {
+    skeleton.interpolate();
+    skeleton.stitching();
+    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+    skeleton.evolve(Itarget,T,2,1);
+    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+    skeleton.evolve(Itarget,T,2,1);
     update();
   } else if (event->key() == Qt::Key_N) {
     fillMode = !fillMode;
     update();
+  } else if (event->key() == Qt::Key_W) {
+    Itarget *= 0.1;
+    cout << "Itarget = "<<Itarget<<endl;
+  } else if (event->key() == Qt::Key_X) {
+    Itarget += 0.1;
+    cout << "Itarget = "<<Itarget<<endl;
+  } else if (event->key() == Qt::Key_Y) {
+    T *= 0.1;
+    cout << "T = "<<T<<endl;
+  } else if (event->key() == Qt::Key_U) {
+    T += 0.1;
+    cout << "T = "<<T<<endl;
   } else if (event->key() == Qt::Key_B) {
     displaySpheres = !displaySpheres;
     update();
