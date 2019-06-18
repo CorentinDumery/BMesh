@@ -4,7 +4,7 @@
 void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   // Specify the actions :
   DetailedAction *open_mesh =
-      new DetailedAction(QIcon(":icons/open.png"), "Open Mesh", "Open Mesh",
+      new DetailedAction(QIcon(":icons/open.png"), "Open mesh", "Open Mesh",
                          this, this, SLOT(open_mesh()));
   DetailedAction *save_mesh =
       new DetailedAction(QIcon(":icons/save.png"), "Save model", "Save model",
@@ -29,12 +29,12 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   DetailedAction *showMesh =
       new DetailedAction(QIcon(":icons/showMesh.png"), "Show mesh", "Show mesh",
                          this, this, SLOT(showMesh()));
-  DetailedAction *generateRandom =
-      new DetailedAction(QIcon(":icons/generateRandom.png"), "Generate a random skeleton", "Generate a random skeleton",
-                         this, this, SLOT(generateRandom()));
-  DetailedAction *startFromScratch =
-      new DetailedAction(QIcon(":icons/startFromScratch.png"), "Start a new skeleton", "Start a new skeleton",
-                         this, this, SLOT(startFromScratch()));
+  DetailedAction *generateRandom = new DetailedAction(
+      QIcon(":icons/generateRandom.png"), "Generate a random skeleton",
+      "Generate a random skeleton", this, this, SLOT(generateRandom()));
+  DetailedAction *startFromScratch = new DetailedAction(
+      QIcon(":icons/startFromScratch.png"), "Start a new skeleton",
+      "Start a new skeleton", this, this, SLOT(startFromScratch()));
 
   // Add them :
   toolBar->addAction(open_mesh);
@@ -180,13 +180,28 @@ QString MyViewer::helpString() const {
 void MyViewer::keyPressEvent(QKeyEvent *event) {
   if (event->key() == Qt::Key_A) {
     if (selectedNode != nullptr) { // a node is selected
-      //      point3d center = selectedNode->getValue()->getCenter();
-      //      point3d pos = point3d(cursorPos.x, cursorPos.y, cursorPos.z) +
-      //      point3d(orig.x,orig.y,center.z()); std::cout << cursorPos <<
-      //      "\t\t" << center << std::endl;
-      selectedNode->addChild(new Sphere(cursorPos, 1));
+      // the added sphere is denoted by both the position of the cursor and the
+      // depth of the mother node
+
+      point3d center = selectedNode->getValue()
+                           ->getCenter(); // used to set the missing coordinate
+                                          // of the added sphere
+
+      camera()->computeModelViewMatrix(); // necessary to compute the
+                                          // (un)projected coordinates
+
+      qglviewer::Vec projCenter = camera()->projectedCoordinatesOf(
+          qglviewer::Vec(center[0], center[1],
+                         center[2])); // get the coordinates of the mother node
+                                      // in the screen system
+
+      point3d pos = camera()->unprojectedCoordinatesOf(
+          qglviewer::Vec(cursorT[0], cursorT[1],
+                         projCenter[2])); // set the coordinate of the created
+                                          // node in the world system
+
+      selectedNode->addChild(new Sphere(pos, 1)); // add the node
       update();
-      // TODO
     } else {
       skeleton.generateAnimal();
       update();
@@ -246,18 +261,13 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       }
     }
   } else if (event->key() == Qt::Key_D) {
-
-    DVect pt =
-        skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y, cursorPos.z));
-    std::cout << "cursor position : " << cursorPos << "\tI value : " << pt.val
-              << "\tI gradient : " << pt.vect << std::endl;
+    //     DVect pt =
+    //        skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y,
+    //        cursorPos.z));
+    //    std::cout << "cursor position : " << cursorPos << "\tI value : " <<
+    //    pt.val
+    //              << "\tI gradient : " << pt.vect << std::endl;
   } else if (event->key() == Qt::Key_G) {
-    //      int nbNode = skeleton.countNode(skeleton.getRoot());
-    //      std::cout << "Nb Node : " << nbNode << std::endl;
-
-    //      int subd = skeleton.getSubdivisionLevel();
-    //      std::cout << "Subd level : " << subd << std::endl;
-
     double u = skeleton.getMinRadius(skeleton.getRoot(),
                                      skeleton.getRoot()->getValue()->radius);
     std::cout << "Minimal radius : " << u << std::endl;
@@ -290,20 +300,9 @@ void MyViewer::mouseDoubleClickEvent(QMouseEvent *e) {
 }
 
 void MyViewer::mouseMoveEvent(QMouseEvent *e) {
-  // get mouse ray in real world coordinate.
-  camera()->convertClickToLine(e->pos(), orig, dir);
 
-  bool found;
-  cursorPos = camera()->pointUnderPixel(e->pos(), found);
-  qglviewer::Vec a = camera()->unprojectedCoordinatesOf(
-      qglviewer::Vec(e->pos().x(), e->pos().y(), 0));
-
-  qglviewer::Vec b = camera()->cameraCoordinatesOf(a);
-
-  //  std::cout << /*orig << "\t\t" << dir << "\t\t" << */ e->pos().x() << " "
-  //            << e->pos().y() << "\t\t"
-  //            << camera()->pointUnderPixel(e->pos(), found)
-  //            << "\t\t" << a << "\t\t" << b << std::endl;
+  cursorT[0] = e->pos().x();
+  cursorT[1] = e->pos().y();
 
   QGLViewer::mouseMoveEvent(e);
 }
@@ -460,5 +459,6 @@ void MyViewer::startFromScratch() {
   mesh.clear();
   skeleton.clear();
   skeleton.init();
+  displaySpheres = true;
   update();
 }
