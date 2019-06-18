@@ -6,7 +6,16 @@
 
 namespace CatmullClark {
 Mesh subdivision(const Mesh &mesh);
-point3d getFacePoint(const Mesh &mesh, const Quadruplet &face);
+template <typename Face>
+point3d getFacePoint(const Mesh &mesh, const Face &face) {
+  point3d center;
+
+  for (uint i = 0; i < face.size(); i++)
+    center += mesh.vertices[face[i]].p;
+
+  center /= face.size();
+  return center;
+}
 string combineNumbers(uint a, uint b);
 string getEdgeKey(uint a, uint b);
 pair<uint, uint> extractEdgeFromKey(const string &key);

@@ -19,6 +19,23 @@ Mesh CatmullClark::subdivision(const Mesh &mesh) {
     }
   }
 
+  // For triangles
+  for (auto &face : mesh.triangles) {
+    // FP
+    point3d fp = getFacePoint(mesh, face);
+
+    // EP
+    point3d intialEdge =
+        (mesh.vertices[face[face.size() - 1]].p + mesh.vertices[face[0]].p) / 2;
+    insertEdge(EP, getEdgeKey(face[face.size() - 1], face[0]), intialEdge, fp);
+
+    for (uint i = 0; i < face.size() - 1; i++) {
+      point3d edge =
+          (mesh.vertices[face[i + 1]].p + mesh.vertices[face[i]].p) / 2;
+      insertEdge(EP, getEdgeKey(face[i + 1], face[i]), edge, fp);
+    }
+  }
+
   // Finish to calculate edge points position
   for (auto &ep : EP)
     ep.second.first /= ep.second.second;
@@ -30,6 +47,17 @@ Mesh CatmullClark::subdivision(const Mesh &mesh) {
   barycentersR.resize(mesh.vertices.size(), {point3d(0, 0, 0), 0});
 
   for (auto &face : mesh.quadrangles) {
+    point3d fp = getFacePoint(mesh, face);
+
+    // Calculates FP barycenters
+    for (uint i = 0; i < face.size(); i++) {
+      barycentersF[face[i]].first += fp;
+      barycentersF[face[i]].second++;
+    }
+  }
+
+  // For triangles
+  for (auto &face : mesh.triangles) {
     point3d fp = getFacePoint(mesh, face);
 
     // Calculates FP barycenters
@@ -68,14 +96,35 @@ Mesh CatmullClark::subdivision(const Mesh &mesh) {
   // Generate the new Mesh
   Mesh subdividedMesh;
 
+  //  auto &face = mesh.quadrangles[0];
   for (auto &face : mesh.quadrangles) {
     point3d fp = getFacePoint(mesh, face);
 
     // initial phase
     point3d aInit = fp;
-    point3d bInit = newPoints[face[0]];
+    point3d bInit = newPoints[face[face.size() - 1]];
     point3d cInit = EP[getEdgeKey(face[0], face[face.size() - 1])].first;
-    point3d dInit = newPoints[face[face.size() - 1]];
+    point3d dInit = newPoints[face[0]];
+    insertNewFace(subdividedMesh, aInit, bInit, cInit, dInit);
+
+    for (uint i = 0; i < face.size() - 1; i++) {
+      point3d a = fp;
+      point3d b = newPoints[face[i]];
+      point3d c = EP[getEdgeKey(face[i], face[i + 1])].first;
+      point3d d = newPoints[face[i + 1]];
+      insertNewFace(subdividedMesh, a, b, c, d);
+    }
+  }
+
+  //  // for tirangles
+  for (auto &face : mesh.triangles) {
+    point3d fp = getFacePoint(mesh, face);
+
+    // initial phase
+    point3d aInit = fp;
+    point3d bInit = newPoints[face[face.size() - 1]];
+    point3d cInit = EP[getEdgeKey(face[0], face[face.size() - 1])].first;
+    point3d dInit = newPoints[face[0]];
     insertNewFace(subdividedMesh, aInit, bInit, cInit, dInit);
 
     for (uint i = 0; i < face.size() - 1; i++) {
@@ -88,17 +137,6 @@ Mesh CatmullClark::subdivision(const Mesh &mesh) {
   }
 
   return subdividedMesh;
-}
-
-// TODO : templetize quadruplet and triplet
-point3d CatmullClark::getFacePoint(const Mesh &mesh, const Quadruplet &face) {
-  point3d center;
-
-  for (uint i = 0; i < face.size(); i++)
-    center += mesh.vertices[face[i]].p;
-
-  center /= face.size();
-  return center;
 }
 
 string CatmullClark::combineNumbers(uint a, uint b) {
