@@ -43,7 +43,7 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   float Itarget = 0.1;
   float T = 0.1 ;
 
-  qglviewer::Vec cursorPos, orig, dir;
+  int cursorT[2];
 
   QWidget *controls;
 
