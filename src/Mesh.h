@@ -514,6 +514,7 @@ public:
   }
 
   point3d getCenter() const { return center; }
+  void setCenter(point3d c) { center = c; }
 
   point3d center;
   double radius;

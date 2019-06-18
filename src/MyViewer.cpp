@@ -150,26 +150,31 @@ QString MyViewer::helpString() const {
   text += "</ul>";
   text += "<h3>Basics</h3>";
   text += "<p>";
+
   text += "App actions: <ul>";
   text += "<li>H   :   make this help appear</li>";
   text += "<li>Ctrl + mouse right button double click   :   choose "
           "background color</li>";
   text += "<li>Ctrl + T   :   change window title</li>";
+
   text += "</ul>Nodes manipulation and visualisation : <ul>";
   text += "<li>Backspace   :   suppress the current skeleton to get an initial "
           "node</li>";
   text += "<li>Shift + mouse left button click   :   select a node</li>";
   text += "<li>A   :   generate a random skeleton, or add a node child to the "
           "selected node, if any</li>";
+  text += "<li>M   :   move the selected node to the cursor position</li>";
   text += "<li>S   :   generate star</li>";
   text += "<li>B   :   hide spheres</li>";
   text += "<li>N   :   show mesh</li>";
+
   text += "</ul>Mesh generation : <ul>";
   text += "<li>I   :   interpolate</li>";
   text += "<li>K   :   stitch</li>";
   text += "<li>C   :   subdivise with cattmull</li>";
   text += "<li>E   :   evolve</li>";
   text += "<li>F   :   launch the pipeline</li>";
+
   text += "</ul>For debug : <ul>";
   text += "<li>G   :   get diverse kind of information</li>";
   text += "<li>L   :   show curvatures</li>";
@@ -206,6 +211,28 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       skeleton.generateAnimal();
       update();
     }
+  } else if (event->key() == Qt::Key_M) {
+      if (selectedNode != nullptr) {
+          point3d center = selectedNode->getValue()
+                               ->getCenter(); // used to set the missing coordinate
+                                              // for the displacement
+
+          camera()->computeModelViewMatrix(); // necessary to compute the
+                                              // (un)projected coordinates
+
+          qglviewer::Vec projCenter = camera()->projectedCoordinatesOf(
+              qglviewer::Vec(center[0], center[1],
+                             center[2])); // get the coordinates of the node
+                                          // in the screen system
+
+          point3d pos = camera()->unprojectedCoordinatesOf(
+              qglviewer::Vec(cursorT[0], cursorT[1],
+                             projCenter[2])); // set the coordinate of the new position of the
+                                              // node in the world system
+
+          selectedNode->editSphere(pos, selectedNode->getValue()->radius); // update position
+          update();
+      }
   } else if (event->key() == Qt::Key_S) {
     skeleton.generateStar();
     update();
