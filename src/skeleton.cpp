@@ -20,13 +20,21 @@ Skeleton::Skeleton(Sphere *sphere) : root(new Node(sphere)) {
 
 Skeleton::~Skeleton() { delete root; }
 
+void Skeleton::clear() {
+    clearInterpolation();
+    clearHull();
+    delete root;
+}
+
+void Skeleton::init() {
+    root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
+}
+
 void Skeleton::draw(const uint selectedId) const { draw(root, selectedId); }
 void Skeleton::generateRandom() {
   srand(time(NULL));
 
-  clearHull();
-  clearInterpolation();
-  delete root;
+  clear();
   root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
 
   auto genP = [](float c = 1, float offset = 0) {
@@ -58,9 +66,7 @@ void Skeleton::generateRandom() {
 
 void Skeleton::generateAnimal(int numSph) {
   srand(time(NULL));
-  clearHull();
-  clearInterpolation();
-  delete root;
+  clear();
   root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
 
   float theta = (float)(random() % 3100) / 1000;
@@ -103,9 +109,7 @@ void Skeleton::generateAnimal(int numSph) {
 }
 
 void Skeleton::generateStar() {
-  clearHull();
-  clearInterpolation();
-  delete root;
+  clear();
   root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
 
   root->addChild(new Sphere(point3d(3, 0, 4)));
