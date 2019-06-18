@@ -44,6 +44,8 @@ public:
   double getMinRadius(Node *node,
                       double rad); // typically initialize with root and the
                                    // radius of root's sphere
+  void clear(); // clear everything to start from scratch
+  void init(); // get a (very) simple skeleton, with one sphere, to begin with
 
 private:
   Node *root;

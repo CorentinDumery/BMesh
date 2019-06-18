@@ -133,20 +133,21 @@ QString MyViewer::helpString() const {
           "background color</li>";
   text += "<li>Ctrl + T   :   change window title</li>";
   text += "</ul>Nodes manipulation and visualisation : <ul>";
+  text += "<li>Backspace   :   suppress the current skeleton to get an initial node</li>";
   text += "<li>Shift + mouse left button click   :   select a node</li>";
   text += "<li>A   :   generate a random skeleton, or add a node child to the "
           "selected node, if any</li>";
+  text += "<li>S   :   generate star</li>";
   text += "<li>B   :   hide spheres</li>";
   text += "<li>N   :   show mesh</li>";
   text += "</ul>Mesh generation : <ul>";
   text += "<li>I   :   interpolate</li>";
-  text += "<li>C   :   subdivise with cattmull</li>";
   text += "<li>K   :   stitch</li>";
+  text += "<li>C   :   subdivise with cattmull</li>";
   text += "<li>E   :   evolve</li>";
   text += "<li>F   :   launch the pipeline</li>";
   text += "</ul>For debug : <ul>";
   text += "<li>G   :   get diverse kind of information</li>";
-  text += "<li>S   :   get information about the scalar field</li>";
   text += "<li>L   :   show curvatures</li>";
   text += "</ul>";
   return text;
@@ -239,7 +240,13 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
   } else if (event->key() == Qt::Key_C) {
      skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
     update();
-  }
+  }  else if (event->key() == Qt::Key_Backspace) {
+      selectedNode = nullptr;
+      mesh.clear();
+      skeleton.clear();
+      skeleton.init();
+     update();
+   }
 }
 
 void MyViewer::mouseDoubleClickEvent(QMouseEvent *e) {
