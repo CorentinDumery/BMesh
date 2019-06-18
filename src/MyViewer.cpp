@@ -20,14 +20,37 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   DetailedAction *saveSnapShotPlusPlus = new DetailedAction(
       QIcon(":icons/save_snapshot.png"), "Save snapshot", "Save snapshot", this,
       this, SLOT(saveSnapShotPlusPlus()));
+  DetailedAction *pipeline =
+      new DetailedAction(QIcon(":icons/pipeline.png"), "Convert to mesh",
+                         "Convert to mesh", this, this, SLOT(pipeline()));
+  DetailedAction *hideSpheres =
+      new DetailedAction(QIcon(":icons/hideSpheres.png"), "Hide spheres",
+                         "Hide spheres", this, this, SLOT(hideSpheres()));
+  DetailedAction *showMesh =
+      new DetailedAction(QIcon(":icons/showMesh.png"), "Show mesh", "Show mesh",
+                         this, this, SLOT(showMesh()));
+  DetailedAction *generateRandom =
+      new DetailedAction(QIcon(":icons/generateRandom.png"), "Generate a random skeleton", "Generate a random skeleton",
+                         this, this, SLOT(generateRandom()));
+  DetailedAction *startFromScratch =
+      new DetailedAction(QIcon(":icons/startFromScratch.png"), "Start a new skeleton", "Start a new skeleton",
+                         this, this, SLOT(startFromScratch()));
 
   // Add them :
   toolBar->addAction(open_mesh);
   toolBar->addAction(save_mesh);
   toolBar->addAction(help);
+  toolBar->addSeparator();
   toolBar->addAction(saveCamera);
   toolBar->addAction(openCamera);
   toolBar->addAction(saveSnapShotPlusPlus);
+  toolBar->addSeparator();
+  toolBar->addAction(startFromScratch);
+  toolBar->addAction(generateRandom);
+  toolBar->addAction(pipeline);
+  toolBar->addSeparator();
+  toolBar->addAction(hideSpheres);
+  toolBar->addAction(showMesh);
 }
 
 void MyViewer::draw() {
@@ -40,7 +63,7 @@ void MyViewer::draw() {
     glPolygonMode(GL_FRONT, GL_LINE);
   skeleton.hullMesh.draw();
   // TODO parameter to see normals
-  //skeleton.hullMesh.drawNormals();
+  // skeleton.hullMesh.drawNormals();
   if (displaySpheres) {
     skeleton.draw(selectedName());
     skeleton.drawInterpolation();
@@ -133,7 +156,8 @@ QString MyViewer::helpString() const {
           "background color</li>";
   text += "<li>Ctrl + T   :   change window title</li>";
   text += "</ul>Nodes manipulation and visualisation : <ul>";
-  text += "<li>Backspace   :   suppress the current skeleton to get an initial node</li>";
+  text += "<li>Backspace   :   suppress the current skeleton to get an initial "
+          "node</li>";
   text += "<li>Shift + mouse left button click   :   select a node</li>";
   text += "<li>A   :   generate a random skeleton, or add a node child to the "
           "selected node, if any</li>";
@@ -171,31 +195,31 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
     skeleton.generateStar();
     update();
   } else if (event->key() == Qt::Key_E) {
-    skeleton.evolve(Itarget,T,2,1);
+    skeleton.evolve(Itarget, T, 2, 1);
     update();
   } else if (event->key() == Qt::Key_F) {
     skeleton.interpolate();
     skeleton.stitching();
     skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
-    skeleton.evolve(Itarget,T,2,1);
+    skeleton.evolve(Itarget, T, 2, 1);
     skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
-    skeleton.evolve(Itarget,T,2,1);
+    skeleton.evolve(Itarget, T, 2, 1);
     update();
   } else if (event->key() == Qt::Key_N) {
     fillMode = !fillMode;
     update();
   } else if (event->key() == Qt::Key_W) {
     Itarget *= 0.1;
-    cout << "Itarget = "<<Itarget<<endl;
+    cout << "Itarget = " << Itarget << endl;
   } else if (event->key() == Qt::Key_X) {
     Itarget += 0.1;
-    cout << "Itarget = "<<Itarget<<endl;
+    cout << "Itarget = " << Itarget << endl;
   } else if (event->key() == Qt::Key_Y) {
     T *= 0.1;
-    cout << "T = "<<T<<endl;
+    cout << "T = " << T << endl;
   } else if (event->key() == Qt::Key_U) {
     T += 0.1;
-    cout << "T = "<<T<<endl;
+    cout << "T = " << T << endl;
   } else if (event->key() == Qt::Key_B) {
     displaySpheres = !displaySpheres;
     update();
@@ -238,15 +262,15 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
                                      skeleton.getRoot()->getValue()->radius);
     std::cout << "Minimal radius : " << u << std::endl;
   } else if (event->key() == Qt::Key_C) {
-     skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
     update();
-  }  else if (event->key() == Qt::Key_Backspace) {
-      selectedNode = nullptr;
-      mesh.clear();
-      skeleton.clear();
-      skeleton.init();
-     update();
-   }
+  } else if (event->key() == Qt::Key_Backspace) {
+    selectedNode = nullptr;
+    mesh.clear();
+    skeleton.clear();
+    skeleton.init();
+    update();
+  }
 }
 
 void MyViewer::mouseDoubleClickEvent(QMouseEvent *e) {
@@ -404,4 +428,37 @@ void MyViewer::saveSnapShotPlusPlus() {
     saveSnapshot(fileName);
     saveCameraInFile(fileName + QString(".cam"));
   }
+}
+
+void MyViewer::pipeline() {
+  skeleton.interpolate();
+  skeleton.stitching();
+  skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+  skeleton.evolve(Itarget, T, 2, 1);
+  skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+  skeleton.evolve(Itarget, T, 2, 1);
+  update();
+}
+
+void MyViewer::hideSpheres() {
+  displaySpheres = !displaySpheres;
+  update();
+}
+
+void MyViewer::showMesh() {
+  fillMode = !fillMode;
+  update();
+}
+
+void MyViewer::generateRandom() {
+  skeleton.generateAnimal();
+  update();
+}
+
+void MyViewer::startFromScratch() {
+  selectedNode = nullptr;
+  mesh.clear();
+  skeleton.clear();
+  skeleton.init();
+  update();
 }
