@@ -86,6 +86,11 @@ public slots:
   void openCamera();
   void saveCamera();
   void saveSnapShotPlusPlus();
+  void pipeline();
+  void hideSpheres();
+  void showMesh();
+  void generateRandom();
+  void startFromScratch();
 };
 
 #endif // MYVIEWER_H
