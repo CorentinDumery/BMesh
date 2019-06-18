@@ -62,6 +62,7 @@ public:
   std::vector<Triplet> triangles;
   vector<Quadruplet> quadrangles;
   vector<point3d> normals;
+  vector<map<int, float>> cotangentWeights;
   vector<float> curvatures;
   vector<float> surroundingAreas;
   bool showCurvature = false;
@@ -112,45 +113,48 @@ public:
     glEnd();
   }
 
-  void computeNormals(){
-        // TODO improve accuracy of this function
-        normals.resize(vertices.size(),point3d(0,0,0));
-        for (auto tri : triangles){
-            point3d n = point3<float>::cross(vertices[tri.corners[0]].p-vertices[tri.corners[1]].p,vertices[tri.corners[0]].p-vertices[tri.corners[2]].p);
-            n.normalize();
-            for (auto i:tri.corners){
-                normals[i] += n;
-            }
-        }
-        for (auto quad : quadrangles){
-            point3d n = point3<float>::cross(vertices[quad.corners[0]].p-vertices[quad.corners[1]].p,vertices[quad.corners[0]].p-vertices[quad.corners[2]].p);
-            n.normalize();
-            for (auto i:quad.corners){
-                normals[i] += n;
-            }
-        }
-        for (int i =0;i<normals.size();i++){
-            normals[i].normalize();
-        }
+  void computeNormals() {
+    // TODO improve accuracy of this function
+    normals.resize(vertices.size(), point3d(0, 0, 0));
+    for (auto tri : triangles) {
+      point3d n = point3<float>::cross(
+          vertices[tri.corners[0]].p - vertices[tri.corners[1]].p,
+          vertices[tri.corners[0]].p - vertices[tri.corners[2]].p);
+      n.normalize();
+      for (auto i : tri.corners) {
+        normals[i] += n;
+      }
     }
+    for (auto quad : quadrangles) {
+      point3d n = point3<float>::cross(
+          vertices[quad.corners[0]].p - vertices[quad.corners[1]].p,
+          vertices[quad.corners[0]].p - vertices[quad.corners[2]].p);
+      n.normalize();
+      for (auto i : quad.corners) {
+        normals[i] += n;
+      }
+    }
+    for (int i = 0; i < normals.size(); i++) {
+      normals[i].normalize();
+    }
+  }
 
-    void drawNormals(){
-        computeNormals();
-        for (int i =0;i<normals.size();i++){
+  void drawNormals() {
+    computeNormals();
+    for (int i = 0; i < normals.size(); i++) {
 
-            point3d z = point3d::cross(normals[i],point3d(1,2.2,3.1));
-            z.normalize();
-            z = (z-normals[i])/2;
-            point3d zp = (-z-normals[i])/2;
-            z.normalize();
-            zp.normalize();
-            point3d a =vertices[i].p, b=vertices[i].p+normals[i];
-            point3d c =b+z/5,d=b+zp/5;
-            BasicGL::drawLine(a,b);
-            BasicGL::drawLine(c,b);
-            BasicGL::drawLine(d,b);
-        }
-
+      point3d z = point3d::cross(normals[i], point3d(1, 2.2, 3.1));
+      z.normalize();
+      z = (z - normals[i]) / 2;
+      point3d zp = (-z - normals[i]) / 2;
+      z.normalize();
+      zp.normalize();
+      point3d a = vertices[i].p, b = vertices[i].p + normals[i];
+      point3d c = b + z / 5, d = b + zp / 5;
+      BasicGL::drawLine(a, b);
+      BasicGL::drawLine(c, b);
+      BasicGL::drawLine(d, b);
+    }
   }
 
   void mergeTriangles(float stopThreshold = 1) {
@@ -325,7 +329,7 @@ public:
   }
 
   void computeCurvaturesNorm() {
-    // This function computes k1^k1 + k2*k2 and stores it in "curvatures"
+    // This function computes k1^2 + k2^2 and stores it in "curvatures"
 
     // "How ?" will you ask me.
     // We will compute :
@@ -335,6 +339,7 @@ public:
 
     if (vertices.size() == 0)
       return;
+
     computeSurroundingAreas();
     curvatures.clear();
     curvatures.resize(vertices.size(), 0);
@@ -369,7 +374,78 @@ public:
 
     // Mean curvature : cotangeant weigths
 
-    // TODO compute mean curvature
+    computeNormals();
+    cotangentWeightsComputation();
+    double H;
+    for (int i = 0; i < curvatures.size(); i++) {
+        H = vertexMeanCurvatureComputation(i, true);
+        curvatures[i] = pow(2*H,2) - 2*curvatures[i]; // before this line, curvatures[i] is the gaussian curvature
+    }
+  }
+
+  void cotangentWeightsComputation() {
+
+    cotangentWeights.resize(vertices.size());
+
+    for (int i = 0; i < quadrangles.size(); i++) {
+
+      Quadruplet quad = quadrangles[i];
+      Triplet t1 = {quad[0], quad[1], quad[3]};
+      Triplet t2 = {quad[1], quad[2], quad[3]};
+
+      cotangentWeightComputationForATriangle(t1);
+      cotangentWeightComputationForATriangle(t2);
+    }
+
+    // TODO check : are there still triangles ?
+//    for (int i = 0; i < triangles.size(); i++) {
+//        cotangentWeightComputationForATriangle(triangles[i]);
+//    }
+  }
+
+private:
+  float cot(point3d u, point3d v) {
+    float a = computeAngle(u, v); // gets the angle
+    a = 1 / tan(a);               // computes the cotangent
+    return a;
+  }
+
+  void cotangentWeightComputationForATriangle(Triplet t) {
+    point3d x = vertices[t[0]];
+    point3d y = vertices[t[1]];
+    point3d z = vertices[t[2]];
+
+    // alphas
+    cotangentWeights[t[0]][t[1]] += 0.5f * cot(z - x, z - y);
+    cotangentWeights[t[1]][t[2]] += 0.5f * cot(x - y, x - z);
+    cotangentWeights[t[2]][t[0]] += 0.5f * cot(y - z, y - x);
+
+    // betas
+    cotangentWeights[t[0]][t[2]] += 0.5f * cot(y - z, y - x);
+    cotangentWeights[t[1]][t[0]] += 0.5f * cot(z - x, z - y);
+    cotangentWeights[t[2]][t[1]] += 0.5f * cot(x - y, x - z);
+  }
+
+  double vertexMeanCurvatureComputation(int i, bool approx) {
+
+    double m_i = 0;
+    float sum_w_ij = 0.f; // sum of the coefficient : useful to reduce noise, if approximation is wanted.
+    for (std::map<int, float>::iterator it = cotangentWeights[i].begin();
+         it != cotangentWeights[i].end(); ++it) {
+      int j = it->first;       // index of the neighbor of i
+      float w_ij = it->second; // weight w_ij
+      m_i += w_ij * point3d::dot(vertices[j].p-vertices[i].p, normals[i]);
+      sum_w_ij += w_ij;
+    }
+
+    if (approx) {
+        m_i /= 4*sum_w_ij;
+    }
+    else {
+        m_i /= 4*surroundingAreas[i];
+    }
+
+    return m_i;
   }
 };
 

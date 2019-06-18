@@ -127,20 +127,27 @@ QString MyViewer::helpString() const {
   text += "</ul>";
   text += "<h3>Basics</h3>";
   text += "<p>";
-  text += "<ul>";
+  text += "App actions: <ul>";
   text += "<li>H   :   make this help appear</li>";
   text += "<li>Ctrl + mouse right button double click   :   choose "
           "background color</li>";
   text += "<li>Ctrl + T   :   change window title</li>";
+  text += "</ul>Nodes manipulation and visualisation : <ul>";
   text += "<li>Shift + mouse left button click   :   select a node</li>";
   text += "<li>A   :   generate a random skeleton, or add a node child to the "
           "selected node, if any</li>";
+  text += "<li>B   :   hide spheres</li>";
+  text += "<li>N   :   show mesh</li>";
+  text += "</ul>Mesh generation : <ul>";
   text += "<li>I   :   interpolate</li>";
-  text += "<li>K   :   proceed stitching</li>";
-  text += "<li>S   :   get information about the scalar field";
-  text += "<li>E   :   proceed evolution</li>";
+  text += "<li>C   :   subdivise with cattmull</li>";
+  text += "<li>K   :   stitch</li>";
+  text += "<li>E   :   evolve</li>";
+  text += "<li>F   :   launch the pipeline</li>";
+  text += "</ul>For debug : <ul>";
   text += "<li>G   :   get diverse kind of information</li>";
-  text += "<li>C   :   apply a cattmull subdivision to the mesh hull</li>";
+  text += "<li>S   :   get information about the scalar field</li>";
+  text += "<li>L   :   show curvatures</li>";
   text += "</ul>";
   return text;
 }
