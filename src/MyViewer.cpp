@@ -68,6 +68,9 @@ void MyViewer::draw() {
     skeleton.draw(selectedName());
     skeleton.drawInterpolation();
   }
+  if (displayNormals){
+      skeleton.hullMesh.drawNormals();
+  }
 
   // TODO: add a Mesh mode
   // mesh.draw();
@@ -238,6 +241,9 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
     update();
   } else if (event->key() == Qt::Key_E) {
     skeleton.evolve(Itarget, T, 2, 1);
+    update();
+  } else if (event->key() == Qt::Key_G) {
+    skeleton.hullMesh.fairing();
     update();
   } else if (event->key() == Qt::Key_F) {
     skeleton.interpolate();

@@ -38,6 +38,7 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   Node *selectedNode = nullptr;
   bool fillMode = true;
   bool displaySpheres = true;
+  bool displayNormals = false;
 
   // TODO add parameters to the interface
   float Itarget = 0.1;
