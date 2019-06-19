@@ -425,6 +425,11 @@ public:
       neighborsId[triangles[i][2]].push_back(triangles[i][0]);
       neighborsId[triangles[i][2]].push_back(triangles[i][1]);
     }
+
+    for (int i=0;i<neighborsId.size();i++){
+        sort( neighborsId[i].begin(), neighborsId[i].end() );
+        neighborsId[i].erase( unique( neighborsId[i].begin(), neighborsId[i].end() ), neighborsId[i].end() );
+    }
   }
 
   void fairing() {

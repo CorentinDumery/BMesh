@@ -237,7 +237,7 @@ void Skeleton::stitching(Node *node, Quadrangle motherQuad, bool isRoot) {
   // La mère doit quand même add le hull autour de sa propre sphère
 
   double safetyFactor =
-      0.8; // this makes the squares around joint nodes smaller so as to ensure
+      0.4; // this makes the squares around joint nodes smaller so as to ensure
            // the hull computation is stable
   // typically safetyFactor should be between 0.5 and 1, but other values give
   // fun results.
