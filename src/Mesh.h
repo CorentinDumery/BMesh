@@ -62,6 +62,7 @@ public:
   std::vector<Triplet> triangles;
   vector<Quadruplet> quadrangles;
   vector<point3d> normals;
+  vector<vector<int>> neighborsId;
   vector<map<int, float>> cotangentWeights;
   vector<float> curvatures;
   vector<float> surroundingAreas;
@@ -140,9 +141,7 @@ public:
   }
 
   void drawNormals() {
-    computeNormals();
     for (int i = 0; i < normals.size(); i++) {
-
       point3d z = point3d::cross(normals[i], point3d(1, 2.2, 3.1));
       z.normalize();
       z = (z - normals[i]) / 2;
@@ -378,8 +377,10 @@ public:
     cotangentWeightsComputation();
     double H;
     for (int i = 0; i < curvatures.size(); i++) {
-        H = vertexMeanCurvatureComputation(i, true);
-        curvatures[i] = pow(2*H,2) - 2*curvatures[i]; // before this line, curvatures[i] is the gaussian curvature
+      H = vertexMeanCurvatureComputation(i, true);
+      curvatures[i] =
+          pow(2 * H, 2) - 2 * curvatures[i]; // before this line, curvatures[i]
+                                             // is the gaussian curvature
     }
   }
 
@@ -398,9 +399,87 @@ public:
     }
 
     // TODO check : are there still triangles ?
-//    for (int i = 0; i < triangles.size(); i++) {
-//        cotangentWeightComputationForATriangle(triangles[i]);
-//    }
+    //    for (int i = 0; i < triangles.size(); i++) {
+    //        cotangentWeightComputationForATriangle(triangles[i]);
+    //    }
+  }
+
+  void computeNeighbors() {
+    neighborsId.clear();
+    neighborsId.resize(vertices.size());
+    for (int i = 0; i < quadrangles.size(); i++) {
+      neighborsId[quadrangles[i][0]].push_back(quadrangles[i][1]);
+      neighborsId[quadrangles[i][0]].push_back(quadrangles[i][3]);
+      neighborsId[quadrangles[i][1]].push_back(quadrangles[i][0]);
+      neighborsId[quadrangles[i][1]].push_back(quadrangles[i][2]);
+      neighborsId[quadrangles[i][2]].push_back(quadrangles[i][1]);
+      neighborsId[quadrangles[i][2]].push_back(quadrangles[i][3]);
+      neighborsId[quadrangles[i][3]].push_back(quadrangles[i][0]);
+      neighborsId[quadrangles[i][3]].push_back(quadrangles[i][2]);
+    }
+    for (int i = 0; i < triangles.size(); i++) {
+      neighborsId[triangles[i][0]].push_back(triangles[i][1]);
+      neighborsId[triangles[i][0]].push_back(triangles[i][2]);
+      neighborsId[triangles[i][1]].push_back(triangles[i][0]);
+      neighborsId[triangles[i][1]].push_back(triangles[i][2]);
+      neighborsId[triangles[i][2]].push_back(triangles[i][0]);
+      neighborsId[triangles[i][2]].push_back(triangles[i][1]);
+    }
+  }
+
+  void fairing() {
+
+    cout << "Fairing" << endl;
+
+    vector<Vertex> newVertices;
+
+    // Replacing all vertices that appear in four quadrangles/triangles
+
+    computeNeighbors();
+    computeNormals(); // TODO remove ?
+    for (int index = 0; index < vertices.size(); index++) {
+      point3d x = vertices[index].p;
+      int neighborsCount = neighborsId[index].size();
+      cout << neighborsCount << endl;
+      if (neighborsCount != 4) {
+        newVertices.push_back(vertices[index]);
+        continue;
+      }
+      point3d voisin1 = vertices[neighborsId[index][0]].p,
+              voisin2 = vertices[neighborsId[index][1]].p,
+              voisin3 = vertices[neighborsId[index][2]].p,
+              voisin4 = vertices[neighborsId[index][3]].p;
+
+      float k1 = 0; // TODO
+      float k2 = 1;
+      point3d ev; // TODO, attention ev doit correspondre à a et c !!
+      point3d eu;
+
+      if (k1 != k2 && neighborsCount == 4) {
+        point3d a = projectOntoPlane(voisin1, x, normals[index]);
+        point3d b = projectOntoPlane(voisin2, x, normals[index]);
+        point3d c = projectOntoPlane(voisin3, x, normals[index]);
+        point3d d = projectOntoPlane(voisin4, x, normals[index]);
+
+        /*
+        float value;
+        value = pow(point3d::dot((a - x), ev), 2) +
+                pow(point3d::dot((b - x), eu), 2) +
+                pow(point3d::dot((c - x), ev), 2) +
+                pow(point3d::dot((d - x), eu), 2);
+         */
+
+        Vertex v;
+        v.p = (a + c) / 4 + (b + d) / 4;
+        //v.p = (voisin1+voisin3)
+        newVertices.push_back(v);
+
+      } else {
+        // TODO try something for these vertices
+        newVertices.push_back(vertices[index]);
+      }
+    }
+    vertices = newVertices;
   }
 
 private:
@@ -429,20 +508,20 @@ private:
   double vertexMeanCurvatureComputation(int i, bool approx) {
 
     double m_i = 0;
-    float sum_w_ij = 0.f; // sum of the coefficient : useful to reduce noise, if approximation is wanted.
+    float sum_w_ij = 0.f; // sum of the coefficient : useful to reduce noise,
+                          // if approximation is wanted.
     for (std::map<int, float>::iterator it = cotangentWeights[i].begin();
          it != cotangentWeights[i].end(); ++it) {
       int j = it->first;       // index of the neighbor of i
       float w_ij = it->second; // weight w_ij
-      m_i += w_ij * point3d::dot(vertices[j].p-vertices[i].p, normals[i]);
+      m_i += w_ij * point3d::dot(vertices[j].p - vertices[i].p, normals[i]);
       sum_w_ij += w_ij;
     }
 
     if (approx) {
-        m_i /= 4*sum_w_ij;
-    }
-    else {
-        m_i /= 4*surroundingAreas[i];
+      m_i /= 4 * sum_w_ij;
+    } else {
+      m_i /= 4 * surroundingAreas[i];
     }
 
     return m_i;
