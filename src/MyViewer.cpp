@@ -175,8 +175,7 @@ QString MyViewer::helpString() const {
   text += "<li>E   :   evolve</li>";
   text += "<li>F   :   launch the pipeline</li>";
 
-  text += "</ul>For debug : <ul>";
-  text += "<li>G   :   get diverse kind of information</li>";
+  text += "</ul>Other : <ul>";
   text += "<li>L   :   show curvatures</li>";
   text += "</ul>";
   return text;
@@ -231,6 +230,7 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
                                               // node in the world system
 
           selectedNode->editSphere(pos, selectedNode->getValue()->radius); // update position
+          emit(nodeSelected(selectedNode));
           update();
       }
   } else if (event->key() == Qt::Key_S) {
@@ -287,17 +287,6 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
         updateTitle(text);
       }
     }
-  } else if (event->key() == Qt::Key_D) {
-    //     DVect pt =
-    //        skeleton.getScalarField(point3d(cursorPos.x, cursorPos.y,
-    //        cursorPos.z));
-    //    std::cout << "cursor position : " << cursorPos << "\tI value : " <<
-    //    pt.val
-    //              << "\tI gradient : " << pt.vect << std::endl;
-  } else if (event->key() == Qt::Key_G) {
-    double u = skeleton.getMinRadius(skeleton.getRoot(),
-                                     skeleton.getRoot()->getValue()->radius);
-    std::cout << "Minimal radius : " << u << std::endl;
   } else if (event->key() == Qt::Key_C) {
     skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
     update();
