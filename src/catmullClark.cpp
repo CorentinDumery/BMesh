@@ -70,9 +70,11 @@ Mesh CatmullClark::subdivision(const Mesh &mesh) {
   // Calculates EP barycenters
   for (auto &ep : EP) {
     pair<uint, uint> edge = extractEdgeFromKey(ep.first);
-    barycentersR[edge.first].first += ep.second.first;
+    point3d originalEp =
+        (mesh.vertices[edge.first].p + mesh.vertices[edge.second].p) / 2;
+    barycentersR[edge.first].first += originalEp;
     barycentersR[edge.first].second++;
-    barycentersR[edge.second].first += ep.second.first;
+    barycentersR[edge.second].first += originalEp;
     barycentersR[edge.second].second++;
   }
   // Calculate new positions of orginal points
@@ -96,46 +98,47 @@ Mesh CatmullClark::subdivision(const Mesh &mesh) {
   // Generate the new Mesh
   Mesh subdividedMesh;
 
-  //  auto &face = mesh.quadrangles[0];
+  //    auto &face = mesh.quadrangles[0];
   for (auto &face : mesh.quadrangles) {
     point3d fp = getFacePoint(mesh, face);
 
     // initial phase
     point3d aInit = fp;
-    point3d bInit = newPoints[face[face.size() - 1]];
-    point3d cInit = EP[getEdgeKey(face[0], face[face.size() - 1])].first;
-    point3d dInit = newPoints[face[0]];
+    point3d bInit = EP[getEdgeKey(face[0], face[face.size() - 1])].first;
+    point3d cInit = newPoints[face[0]];
+    point3d dInit = EP[getEdgeKey(face[0], face[1])].first;
     insertNewFace(subdividedMesh, aInit, bInit, cInit, dInit);
 
     for (uint i = 0; i < face.size() - 1; i++) {
       point3d a = fp;
-      point3d b = newPoints[face[i]];
-      point3d c = EP[getEdgeKey(face[i], face[i + 1])].first;
-      point3d d = newPoints[face[i + 1]];
+      point3d b = EP[getEdgeKey(face[i], face[i + 1])].first;
+      point3d c = newPoints[face[i + 1]];
+      point3d d =
+          EP[getEdgeKey(face[i + 1], face[(i + 2) % face.size()])].first;
       insertNewFace(subdividedMesh, a, b, c, d);
     }
   }
 
-  //  // for tirangles
+  // for tirangles
   for (auto &face : mesh.triangles) {
     point3d fp = getFacePoint(mesh, face);
 
     // initial phase
     point3d aInit = fp;
-    point3d bInit = newPoints[face[face.size() - 1]];
-    point3d cInit = EP[getEdgeKey(face[0], face[face.size() - 1])].first;
-    point3d dInit = newPoints[face[0]];
+    point3d bInit = EP[getEdgeKey(face[0], face[face.size() - 1])].first;
+    point3d cInit = newPoints[face[0]];
+    point3d dInit = EP[getEdgeKey(face[0], face[1])].first;
     insertNewFace(subdividedMesh, aInit, bInit, cInit, dInit);
 
     for (uint i = 0; i < face.size() - 1; i++) {
       point3d a = fp;
-      point3d b = newPoints[face[i]];
-      point3d c = EP[getEdgeKey(face[i], face[i + 1])].first;
-      point3d d = newPoints[face[i + 1]];
-      insertNewFace(subdividedMesh, a, d, c, b);
+      point3d b = EP[getEdgeKey(face[i], face[i + 1])].first;
+      point3d c = newPoints[face[i + 1]];
+      point3d d =
+          EP[getEdgeKey(face[i + 1], face[(i + 2) % face.size()])].first;
+      insertNewFace(subdividedMesh, a, b, c, d);
     }
   }
-
   return subdividedMesh;
 }
 
