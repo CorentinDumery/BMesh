@@ -93,6 +93,11 @@ public slots:
   void hideShowSpheres();
   void hideShowMesh();
   void hideShowHull();
+  void interpolate();
+  void stitch();
+  void catmull();
+  void evolve();
+  void fairing();
 };
 
 #endif // MYVIEWER_H

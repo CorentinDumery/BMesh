@@ -26,5 +26,10 @@
         <file>icons/hideShowHull.png</file>
         <file>icons/hideShowMesh.png</file>
         <file>icons/hideShowSpheres.png</file>
+        <file>icons/catmull.png</file>
+        <file>icons/evolve.png</file>
+        <file>icons/fairing.png</file>
+        <file>icons/interpolate.png</file>
+        <file>icons/stitch.png</file>
     </qresource>
 </RCC>
