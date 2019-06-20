@@ -446,8 +446,8 @@ void MyViewer::pipeline() {
   skeleton.subdivideHull();
   skeleton.evolve(Itarget, T, 2, 1);
   skeleton.evolve(Itarget, T, 2, 1);
-  skeleton.evolve(Itarget, T, 2, 1);
   skeleton.subdivideHull();
+  skeleton.evolve(Itarget, T, 2, 1);
   for (int i = 0; i < nbFairing; i++) {
     skeleton.hullMesh.fairing();
   }
@@ -507,7 +507,7 @@ void MyViewer::stitch() {
 void MyViewer::catmull() {
   //  displayHull = true;
   //  displaySpheres = false;
-  skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+  skeleton.subdivideHull();
   update();
 }
 
