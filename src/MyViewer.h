@@ -39,7 +39,7 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   bool fillMode = true;
   bool displaySpheres = true;
   bool displayNormals = false;
-  bool displayHull = false;
+  bool displayHull = true;
 
   float Itarget = 0.1;
   float T = 0.1 ;
@@ -93,6 +93,7 @@ public slots:
   void hideShowSpheres();
   void hideShowMesh();
   void hideShowHull();
+  void hideShowNormals();
   void interpolate();
   void stitch();
   void catmull();

@@ -34,11 +34,14 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
       QIcon(":icons/hideShowSpheres.png"), "Hide/Show spheres",
       "Hide/Show spheres", this, this, SLOT(hideShowSpheres()));
   DetailedCheckableAction *hideShowMesh = new DetailedCheckableAction(
-      QIcon(":icons/hideShowMesh.png"), "Hide/Show mesh", "Hide/Show mesh",
+      QIcon(":icons/hideShowMesh.png"), "Show/Hide mesh", "Show/Hide mesh",
       this, this, SLOT(hideShowMesh()));
   DetailedCheckableAction *hideShowHull = new DetailedCheckableAction(
       QIcon(":icons/hideShowHull.png"), "Hide/Show hull", "Hide/Show hull",
       this, this, SLOT(hideShowHull()));
+  DetailedCheckableAction *hideShowNormals = new DetailedCheckableAction(
+      QIcon(":icons/hideShowNormals.png"), "Hide/Show normals",
+      "Hide/Show normals", this, this, SLOT(hideShowNormals()));
 
   // Add them :
   toolBar->addAction(open_mesh);
@@ -56,6 +59,7 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   toolBar->addAction(hideShowSpheres);
   toolBar->addAction(hideShowMesh);
   toolBar->addAction(hideShowHull);
+  toolBar->addAction(hideShowNormals);
 }
 
 void MyViewer::draw() {
@@ -71,6 +75,7 @@ void MyViewer::draw() {
     skeleton.drawInterpolation();
   }
   if (displayNormals) {
+    skeleton.hullMesh.computeNormals();
     skeleton.hullMesh.drawNormals();
   }
   if (displayHull) {
@@ -267,7 +272,7 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
   } else if (event->key() == Qt::Key_F) {
     pipeline();
   } else if (event->key() == Qt::Key_L) {
-    displayHull = true;
+    //    displayHull = true;
     skeleton.hullMesh.computeCurvaturesNorm();
     skeleton.hullMesh.showCurvature = true;
     update();
@@ -434,8 +439,8 @@ void MyViewer::saveSnapShotPlusPlus() {
 
 void MyViewer::pipeline() {
   int nbFairing = 3;
-  displayHull = true;
-  displaySpheres = false;
+  //  displayHull = true;
+  //  displaySpheres = false;
   skeleton.interpolate();
   skeleton.stitching();
   skeleton.subdivideHull();
@@ -451,7 +456,7 @@ void MyViewer::pipeline() {
 
 void MyViewer::hideShowSpheres() {
   displaySpheres = !displaySpheres;
-  displayHull = false;
+  //  displayHull = false;
   update();
 }
 
@@ -465,6 +470,11 @@ void MyViewer::hideShowHull() {
   update();
 }
 
+void MyViewer::hideShowNormals() {
+  displayNormals = !displayNormals;
+  update();
+}
+
 void MyViewer::generateRandom() {
   skeleton.generateAnimal();
   update();
@@ -474,42 +484,43 @@ void MyViewer::startFromScratch() {
   selectedNode = nullptr;
   skeleton.clear();
   skeleton.init();
-  displaySpheres = true;
-  fillMode = true;
-  displayHull = false;
+  //  displaySpheres = true;
+  //  fillMode = true;
+  //  displayHull = false;
   update();
 }
 
 void MyViewer::interpolate() {
-  displayHull = false;
+  //  displayHull = false;
+  //  displaySpheres = true;
   skeleton.interpolate();
   update();
 }
 
 void MyViewer::stitch() {
-  displayHull = true;
-  displaySpheres = false;
+  //  displayHull = true;
+  //  displaySpheres = false;
   skeleton.stitching();
   update();
 }
 
 void MyViewer::catmull() {
-  displayHull = true;
-  displaySpheres = false;
+  //  displayHull = true;
+  //  displaySpheres = false;
   skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
   update();
 }
 
 void MyViewer::evolve() {
-  displayHull = true;
-  displaySpheres = false;
+  //  displayHull = true;
+  //  displaySpheres = false;
   skeleton.evolve(Itarget, T, 2, 1);
   update();
 }
 
 void MyViewer::fairing() {
-  displayHull = true;
-  displaySpheres = false;
+  //  displayHull = true;
+  //  displaySpheres = false;
   skeleton.hullMesh.fairing();
   update();
 }

@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
   mainLayout->addWidget(sphereEdit, 1,0, 1,1);
   mainWindow->addToolBar(toolBar);
   mainWindow->setCentralWidget(mainWidget);
-  mainWindow->resize(600, 525);
+  mainWindow->resize(640, 525);
 
   // Connect viewer slection to ui sphere editing
   QObject::connect(viewer, &MyViewer::nodeSelected, sphereEdit,
