@@ -2,6 +2,7 @@
 #include "node.h"
 #include "skeleton.h"
 #include "sphereedit.h"
+#include "pipelinestep.h"
 #include "mediator.h"
 #include <QApplication>
 #include <QMainWindow>
@@ -20,8 +21,9 @@ int main(int argc, char **argv) {
 
   QMainWindow *mainWindow = new QMainWindow;
   QWidget *mainWidget = new QWidget;
-  QVBoxLayout *mainLayout = new QVBoxLayout;
+  QGridLayout *mainLayout = new QGridLayout;
   SphereEdit *sphereEdit = new SphereEdit;
+  PipelineStep *pipelineStep = new PipelineStep;
 
   mainWidget->setLayout(mainLayout);
 
@@ -31,8 +33,9 @@ int main(int argc, char **argv) {
   toolBar->setStyleSheet("QToolBar { background: white; }");
   viewer->add_actions_to_toolBar(toolBar);
 
-  mainLayout->addWidget(viewer);
-  mainLayout->addWidget(sphereEdit);
+  mainLayout->addWidget(viewer, 0, 0);
+  mainLayout->addWidget(pipelineStep, 0,1);
+  mainLayout->addWidget(sphereEdit, 1,0, 1,1);
   mainWindow->addToolBar(toolBar);
   mainWindow->setCentralWidget(mainWidget);
   mainWindow->resize(600, 525);
@@ -40,6 +43,18 @@ int main(int argc, char **argv) {
   // Connect viewer slection to ui sphere editing
   QObject::connect(viewer, &MyViewer::nodeSelected, sphereEdit,
                    &SphereEdit::updateSelection);
+
+  // Connect viewer and pipelinestep
+  QObject::connect(pipelineStep, &PipelineStep::interpolate, viewer,
+                   &MyViewer::interpolate);
+  QObject::connect(pipelineStep, &PipelineStep::stitch, viewer,
+                   &MyViewer::stitch);
+  QObject::connect(pipelineStep, &PipelineStep::catmull, viewer,
+                   &MyViewer::catmull);
+  QObject::connect(pipelineStep, &PipelineStep::evolve, viewer,
+                   &MyViewer::evolve);
+  QObject::connect(pipelineStep, &PipelineStep::fairing, viewer,
+                   &MyViewer::fairing);
 
   QObject::connect(viewer, SIGNAL(windowTitleUpdated(QString)), mainWindow,
                    SLOT(setWindowTitle(QString)));

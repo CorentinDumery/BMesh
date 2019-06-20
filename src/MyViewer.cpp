@@ -19,9 +19,11 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   DetailedAction *saveSnapShotPlusPlus = new DetailedAction(
       QIcon(":icons/save_snapshot.png"), "Save snapshot", "Save snapshot", this,
       this, SLOT(saveSnapShotPlusPlus()));
-  DetailedAction *generateRandom = new DetailedAction(
-      QIcon(":icons/generateRandom.png"), "/!\\ EXPERIMENTAL Generate a random skeleton",
-      "/!\\ EXPERIMENTAL Generate a random skeleton", this, this, SLOT(generateRandom()));
+  DetailedAction *generateRandom =
+      new DetailedAction(QIcon(":icons/generateRandom.png"),
+                         "/!\\ EXPERIMENTAL Generate a random skeleton",
+                         "/!\\ EXPERIMENTAL Generate a random skeleton", this,
+                         this, SLOT(generateRandom()));
   DetailedAction *startFromScratch = new DetailedAction(
       QIcon(":icons/startFromScratch.png"), "Start a new skeleton",
       "Start a new skeleton", this, this, SLOT(startFromScratch()));
@@ -31,12 +33,12 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   DetailedCheckableAction *hideShowSpheres = new DetailedCheckableAction(
       QIcon(":icons/hideShowSpheres.png"), "Hide/Show spheres",
       "Hide/Show spheres", this, this, SLOT(hideShowSpheres()));
-  DetailedCheckableAction *hideShowMesh =
-      new DetailedCheckableAction(QIcon(":icons/hideShowMesh.png"), "Hide/Show mesh",
-                         "Hide/Show mesh", this, this, SLOT(hideShowMesh()));
-  DetailedCheckableAction *hideShowHull =
-      new DetailedCheckableAction(QIcon(":icons/hideShowHull.png"), "Hide/Show hull",
-                         "Hide/Show hull", this, this, SLOT(hideShowHull()));
+  DetailedCheckableAction *hideShowMesh = new DetailedCheckableAction(
+      QIcon(":icons/hideShowMesh.png"), "Hide/Show mesh", "Hide/Show mesh",
+      this, this, SLOT(hideShowMesh()));
+  DetailedCheckableAction *hideShowHull = new DetailedCheckableAction(
+      QIcon(":icons/hideShowHull.png"), "Hide/Show hull", "Hide/Show hull",
+      this, this, SLOT(hideShowHull()));
 
   // Add them :
   toolBar->addAction(open_mesh);
@@ -253,25 +255,15 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
   } else if (event->key() == Qt::Key_N) {
     hideShowHull();
   } else if (event->key() == Qt::Key_I) {
-    displayHull = false;
-    skeleton.interpolate();
-    update();
+    interpolate();
   } else if (event->key() == Qt::Key_K) {
-    displayHull = true;
-    skeleton.stitching();
-    update();
-  } else if (event->key() == Qt::Key_E) {
-    displayHull = true;
-    skeleton.evolve(Itarget, T, 2, 1);
-    update();
-  } else if (event->key() == Qt::Key_G) {
-    displayHull = true;
-    skeleton.hullMesh.fairing();
-    update();
+    stitch();
   } else if (event->key() == Qt::Key_C) {
-    displayHull = true;
-    skeleton.subdivideHull();
-    update();
+    catmull();
+  } else if (event->key() == Qt::Key_E) {
+    evolve();
+  } else if (event->key() == Qt::Key_G) {
+    fairing();
   } else if (event->key() == Qt::Key_F) {
     pipeline();
   } else if (event->key() == Qt::Key_L) {
@@ -485,5 +477,39 @@ void MyViewer::startFromScratch() {
   displaySpheres = true;
   fillMode = true;
   displayHull = false;
+  update();
+}
+
+void MyViewer::interpolate() {
+  displayHull = false;
+  skeleton.interpolate();
+  update();
+}
+
+void MyViewer::stitch() {
+  displayHull = true;
+  displaySpheres = false;
+  skeleton.stitching();
+  update();
+}
+
+void MyViewer::catmull() {
+  displayHull = true;
+  displaySpheres = false;
+  skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+  update();
+}
+
+void MyViewer::evolve() {
+  displayHull = true;
+  displaySpheres = false;
+  skeleton.evolve(Itarget, T, 2, 1);
+  update();
+}
+
+void MyViewer::fairing() {
+  displayHull = true;
+  displaySpheres = false;
+  skeleton.hullMesh.fairing();
   update();
 }
