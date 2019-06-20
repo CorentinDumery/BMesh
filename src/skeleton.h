@@ -21,7 +21,6 @@ public:
 
   void stitching();
   inline Node *getRoot() const { return root; }
-  inline int getSubdivisionLevel() const { return subdivisionLevel; }
 
   void draw(const uint selectedId) const;
   void drawWithNames() const;
@@ -41,6 +40,7 @@ public:
            float alpha = 1.5);
   void evolve(double Itarget, float T = 0.3, float alpha = 1.5,
               float errorThreshold = 1);
+  void subdivideHull();
 
   int countNode(Node *node, int nb = 0);
   double getMinRadius(Node *node,

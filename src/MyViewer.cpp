@@ -1,5 +1,4 @@
 #include "MyViewer.h"
-#include "catmullClark.h"
 
 void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   // Specify the actions :
@@ -271,7 +270,7 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
     update();
   } else if (event->key() == Qt::Key_C) {
     displayHull = true;
-    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+    skeleton.subdivideHull();
     update();
   } else if (event->key() == Qt::Key_F) {
     pipeline();
@@ -447,10 +446,10 @@ void MyViewer::pipeline() {
   displaySpheres = false;
   skeleton.interpolate();
   skeleton.stitching();
-  skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+  skeleton.subdivideHull();
   skeleton.evolve(Itarget, T, 2, 1);
   skeleton.evolve(Itarget, T, 2, 1);
-  skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+  skeleton.subdivideHull();
   skeleton.evolve(Itarget, T, 2, 1);
   for (int i = 0; i < nbFairing; i++) {
     skeleton.hullMesh.fairing();

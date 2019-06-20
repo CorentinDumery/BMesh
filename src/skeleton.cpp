@@ -651,8 +651,6 @@ void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold
     //m_vertices.push_back(v);
   }
 
-
-  // TODO check catmull increments subdivision level
   double step =
       getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
   double deltaT = step / Fmax;
@@ -671,4 +669,10 @@ void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold
   }
   hullMesh.vertices = newVertices;
 
+}
+
+void Skeleton::subdivideHull()
+{
+    hullMesh = CatmullClark::subdivision(hullMesh);
+    subdivisionLevel++;
 }
