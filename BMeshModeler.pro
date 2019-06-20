@@ -16,6 +16,7 @@ HEADERS += ./src/point3.h \
     ./src/gl/GLUtilityMethods.h \
     ./src/gl/BasicColors.h \
     ./src/sphereedit.h \
+    ./src/pipelinestep.h \
     src/node.h \
     src/skeleton.h \
     src/mediator.h \
@@ -23,9 +24,10 @@ HEADERS += ./src/point3.h \
     src/catmullClark.h \
     src/utility.h
 SOURCES += ./src/main.cpp \
-    ./src/gl/GLUtilityMethods.cpp\
+    ./src/gl/GLUtilityMethods.cpp \
     ./src/gl/BasicColors.cpp \
     ./src/sphereedit.cpp \
+    ./src/pipelinestep.cpp \
     src/skeleton.cpp \
     src/MyViewer.cpp \
     src/mediator.cpp \
@@ -60,4 +62,5 @@ RESOURCES += \
     icons.qrc
 
 FORMS += \
-    src/sphereedit.ui
+    src/sphereedit.ui \
+    src/pipelinestep.ui
