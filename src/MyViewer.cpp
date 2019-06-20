@@ -56,7 +56,7 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
 void MyViewer::draw() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
-  glColor3f(0.0, 0.5, 0.0);
+  glColor3f(0.2, 0.4, 0.8);
   if (fillMode)
     glPolygonMode(GL_FRONT, GL_FILL);
   else
