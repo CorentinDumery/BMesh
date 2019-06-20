@@ -21,17 +21,20 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
       QIcon(":icons/save_snapshot.png"), "Save snapshot", "Save snapshot", this,
       this, SLOT(saveSnapShotPlusPlus()));
   DetailedAction *pipeline =
-      new DetailedAction(QIcon(":icons/pipeline.png"), "Convert to mesh",
-                         "Convert to mesh", this, this, SLOT(pipeline()));
-  DetailedAction *hideSpheres =
-      new DetailedAction(QIcon(":icons/hideSpheres.png"), "Hide spheres",
-                         "Hide spheres", this, this, SLOT(hideSpheres()));
-  DetailedAction *showMesh =
-      new DetailedAction(QIcon(":icons/showMesh.png"), "Show mesh", "Show mesh",
-                         this, this, SLOT(showMesh()));
+      new DetailedAction(QIcon(":icons/pipeline.png"), "Transform", "Transform",
+                         this, this, SLOT(pipeline()));
+  DetailedAction *hideShowSpheres = new DetailedAction(
+      QIcon(":icons/hideShowSpheres.png"), "Hide/Show spheres",
+      "Hide/Show spheres", this, this, SLOT(hideShowSpheres()));
+  DetailedAction *hideShowMesh =
+      new DetailedAction(QIcon(":icons/hideShowMesh.png"), "Hide/Show mesh",
+                         "Hide/Show mesh", this, this, SLOT(hideShowMesh()));
+  DetailedAction *hideShowHull =
+      new DetailedAction(QIcon(":icons/hideShowHull.png"), "Hide/Show hull",
+                         "Hide/Show hull", this, this, SLOT(hideShowHull()));
   DetailedAction *generateRandom = new DetailedAction(
-      QIcon(":icons/generateRandom.png"), "Generate a random skeleton",
-      "Generate a random skeleton", this, this, SLOT(generateRandom()));
+      QIcon(":icons/generateRandom.png"), "/!\\ EXPERIMENTAL Generate a random skeleton",
+      "/!\\ EXPERIMENTAL Generate a random skeleton", this, this, SLOT(generateRandom()));
   DetailedAction *startFromScratch = new DetailedAction(
       QIcon(":icons/startFromScratch.png"), "Start a new skeleton",
       "Start a new skeleton", this, this, SLOT(startFromScratch()));
@@ -49,8 +52,9 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   toolBar->addAction(generateRandom);
   toolBar->addAction(pipeline);
   toolBar->addSeparator();
-  toolBar->addAction(hideSpheres);
-  toolBar->addAction(showMesh);
+  toolBar->addAction(hideShowSpheres);
+  toolBar->addAction(hideShowMesh);
+  toolBar->addAction(hideShowHull);
 }
 
 void MyViewer::draw() {
@@ -61,18 +65,16 @@ void MyViewer::draw() {
     glPolygonMode(GL_FRONT, GL_FILL);
   else
     glPolygonMode(GL_FRONT, GL_LINE);
-  skeleton.hullMesh.draw();
-  // TODO parameter to see normals
-  // skeleton.hullMesh.drawNormals();
   if (displaySpheres) {
     skeleton.draw(selectedName());
     skeleton.drawInterpolation();
   }
-  if (displayNormals){
-      skeleton.hullMesh.drawNormals();
+  if (displayNormals) {
+    skeleton.hullMesh.drawNormals();
   }
-
-  // TODO: add a Mesh mode
+  if (displayHull) {
+    skeleton.hullMesh.draw();
+  }
   // mesh.draw();
 }
 
@@ -161,22 +163,25 @@ QString MyViewer::helpString() const {
   text += "<li>Ctrl + T   :   change window title</li>";
 
   text += "</ul>Nodes manipulation and visualisation : <ul>";
+  text += "<li>R   :   generate a random skeleton";
+  text += "<li>S   :   generate a star</li>";
   text += "<li>Backspace   :   suppress the current skeleton to get an initial "
+          "and unique "
           "node</li>";
   text += "<li>Shift + mouse left button click   :   select a node</li>";
-  text += "<li>A   :   generate a random skeleton, or add a node child to the "
-          "selected node, if any</li>";
+  text += "<li>A   :   add a node child to the selected node, at the cursor "
+          "position</li>";
   text += "<li>M   :   move the selected node to the cursor position</li>";
-  text += "<li>S   :   generate star</li>";
-  text += "<li>B   :   hide spheres</li>";
-  text += "<li>N   :   show mesh</li>";
+  text += "<li>V   :   hide/show spheres</li>";
+  text += "<li>B   :   hide/show mesh</li>";
+  text += "<li>N   :   hide/show hull</li>";
 
   text += "</ul>Mesh generation : <ul>";
   text += "<li>I   :   interpolate</li>";
   text += "<li>K   :   stitch</li>";
   text += "<li>C   :   subdivise with cattmull</li>";
   text += "<li>E   :   evolve</li>";
-  text += "<li>F   :   launch the pipeline</li>";
+  text += "<li>F   :   launch the full pipeline</li>";
 
   text += "</ul>Other : <ul>";
   text += "<li>L   :   show curvatures</li>";
@@ -185,7 +190,15 @@ QString MyViewer::helpString() const {
 }
 
 void MyViewer::keyPressEvent(QKeyEvent *event) {
-  if (event->key() == Qt::Key_A) {
+  if (event->key() == Qt::Key_R) {
+    skeleton.generateAnimal();
+    update();
+  } else if (event->key() == Qt::Key_S) {
+    skeleton.generateStar();
+    update();
+  } else if (event->key() == Qt::Key_Backspace) {
+    startFromScratch();
+  } else if (event->key() == Qt::Key_A) {
     if (selectedNode != nullptr) { // a node is selected
       // the added sphere is denoted by both the position of the cursor and the
       // depth of the mother node
@@ -208,76 +221,62 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
                                           // node in the world system
 
       selectedNode->addChild(new Sphere(pos, 1)); // add the node
-      update();
-    } else {
-      skeleton.generateAnimal();
-      update();
+      pipeline();
     }
   } else if (event->key() == Qt::Key_M) {
-      if (selectedNode != nullptr) {
-          point3d center = selectedNode->getValue()
-                               ->getCenter(); // used to set the missing coordinate
-                                              // for the displacement
+    if (selectedNode != nullptr) {
+      point3d center = selectedNode->getValue()
+                           ->getCenter(); // used to set the missing coordinate
+                                          // for the displacement
 
-          camera()->computeModelViewMatrix(); // necessary to compute the
-                                              // (un)projected coordinates
+      camera()->computeModelViewMatrix(); // necessary to compute the
+                                          // (un)projected coordinates
 
-          qglviewer::Vec projCenter = camera()->projectedCoordinatesOf(
-              qglviewer::Vec(center[0], center[1],
-                             center[2])); // get the coordinates of the node
-                                          // in the screen system
+      qglviewer::Vec projCenter = camera()->projectedCoordinatesOf(
+          qglviewer::Vec(center[0], center[1],
+                         center[2])); // get the coordinates of the node
+                                      // in the screen system
 
-          point3d pos = camera()->unprojectedCoordinatesOf(
-              qglviewer::Vec(cursorT[0], cursorT[1],
-                             projCenter[2])); // set the coordinate of the new position of the
-                                              // node in the world system
+      point3d pos = camera()->unprojectedCoordinatesOf(qglviewer::Vec(
+          cursorT[0], cursorT[1],
+          projCenter[2])); // set the coordinate of the new position of the
+                           // node in the world system
 
-          selectedNode->editSphere(pos, selectedNode->getValue()->radius); // update position
-          emit(nodeSelected(selectedNode));
-          update();
-      }
-  } else if (event->key() == Qt::Key_S) {
-    skeleton.generateStar();
+      selectedNode->editSphere(
+          pos, selectedNode->getValue()->radius); // update position
+      emit(nodeSelected(selectedNode));
+      pipeline();
+    }
+  } else if (event->key() == Qt::Key_V) {
+    hideShowSpheres();
+  } else if (event->key() == Qt::Key_B) {
+    hideShowMesh();
+  } else if (event->key() == Qt::Key_N) {
+    hideShowHull();
+  } else if (event->key() == Qt::Key_I) {
+    displayHull = false;
+    skeleton.interpolate();
+    update();
+  } else if (event->key() == Qt::Key_K) {
+    displayHull = true;
+    skeleton.stitching();
     update();
   } else if (event->key() == Qt::Key_E) {
+    displayHull = true;
     skeleton.evolve(Itarget, T, 2, 1);
     update();
   } else if (event->key() == Qt::Key_G) {
+    displayHull = true;
     skeleton.hullMesh.fairing();
     update();
+  } else if (event->key() == Qt::Key_C) {
+    displayHull = true;
+    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
+    update();
   } else if (event->key() == Qt::Key_F) {
-    skeleton.interpolate();
-    skeleton.stitching();
-    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
-    skeleton.evolve(Itarget, T, 2, 1);
-    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
-    skeleton.evolve(Itarget, T, 2, 1);
-    update();
-  } else if (event->key() == Qt::Key_N) {
-    fillMode = !fillMode;
-    update();
-  } else if (event->key() == Qt::Key_W) {
-    Itarget *= 0.1;
-    cout << "Itarget = " << Itarget << endl;
-  } else if (event->key() == Qt::Key_X) {
-    Itarget += 0.1;
-    cout << "Itarget = " << Itarget << endl;
-  } else if (event->key() == Qt::Key_Y) {
-    T *= 0.1;
-    cout << "T = " << T << endl;
-  } else if (event->key() == Qt::Key_U) {
-    T += 0.1;
-    cout << "T = " << T << endl;
-  } else if (event->key() == Qt::Key_B) {
-    displaySpheres = !displaySpheres;
-    update();
-  } else if (event->key() == Qt::Key_K) {
-    skeleton.stitching();
-    update();
-  } else if (event->key() == Qt::Key_I) {
-    skeleton.interpolate();
-    update();
+    pipeline();
   } else if (event->key() == Qt::Key_L) {
+    displayHull = true;
     skeleton.hullMesh.computeCurvaturesNorm();
     skeleton.hullMesh.showCurvature = true;
     update();
@@ -293,15 +292,6 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
         updateTitle(text);
       }
     }
-  } else if (event->key() == Qt::Key_C) {
-    skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
-    update();
-  } else if (event->key() == Qt::Key_Backspace) {
-    selectedNode = nullptr;
-    mesh.clear();
-    skeleton.clear();
-    skeleton.init();
-    update();
   }
 }
 
@@ -452,22 +442,34 @@ void MyViewer::saveSnapShotPlusPlus() {
 }
 
 void MyViewer::pipeline() {
+  int nbFairing = 3;
+  displayHull = true;
+  displaySpheres = false;
   skeleton.interpolate();
   skeleton.stitching();
   skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
   skeleton.evolve(Itarget, T, 2, 1);
+  skeleton.evolve(Itarget, T, 2, 1);
   skeleton.hullMesh = CatmullClark::subdivision(skeleton.hullMesh);
   skeleton.evolve(Itarget, T, 2, 1);
+  for (int i = 0; i < nbFairing; i++) {
+    skeleton.hullMesh.fairing();
+  }
   update();
 }
 
-void MyViewer::hideSpheres() {
+void MyViewer::hideShowSpheres() {
   displaySpheres = !displaySpheres;
   update();
 }
 
-void MyViewer::showMesh() {
+void MyViewer::hideShowMesh() {
   fillMode = !fillMode;
+  update();
+}
+
+void MyViewer::hideShowHull() {
+  displayHull = !displayHull;
   update();
 }
 
@@ -478,9 +480,10 @@ void MyViewer::generateRandom() {
 
 void MyViewer::startFromScratch() {
   selectedNode = nullptr;
-  mesh.clear();
   skeleton.clear();
   skeleton.init();
   displaySpheres = true;
+  fillMode = true;
+  displayHull = false;
   update();
 }

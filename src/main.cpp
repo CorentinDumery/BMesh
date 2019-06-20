@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
   QObject::connect(viewer, SIGNAL(windowTitleUpdated(QString)), mainWindow,
                    SLOT(setWindowTitle(QString)));
-  viewer->updateTitle("myProject");
+  viewer->updateTitle("B-mesh");
 
   mainWindow->setWindowIcon(QIcon("img/icons/icon.png"));
   mainWindow->show();

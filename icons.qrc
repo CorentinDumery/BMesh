@@ -22,8 +22,9 @@
         <file>icons/work.png</file>
         <file>icons/pipeline.png</file>
         <file>icons/generateRandom.png</file>
-        <file>icons/hideSpheres.png</file>
-        <file>icons/showMesh.png</file>
         <file>icons/startFromScratch.png</file>
+        <file>icons/hideShowHull.png</file>
+        <file>icons/hideShowMesh.png</file>
+        <file>icons/hideShowSpheres.png</file>
     </qresource>
 </RCC>
