@@ -449,8 +449,8 @@ void MyViewer::pipeline() {
   skeleton.subdivideHull();
   skeleton.evolve(Itarget, T, 2, 1);
   skeleton.evolve(Itarget, T, 2, 1);
-  skeleton.subdivideHull();
   skeleton.evolve(Itarget, T, 2, 1);
+  skeleton.subdivideHull();
   for (int i = 0; i < nbFairing; i++) {
     skeleton.hullMesh.fairing();
   }
