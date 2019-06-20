@@ -31,5 +31,6 @@
         <file>icons/fairing.png</file>
         <file>icons/interpolate.png</file>
         <file>icons/stitch.png</file>
+        <file>icons/hideShowNormals.png</file>
     </qresource>
 </RCC>
