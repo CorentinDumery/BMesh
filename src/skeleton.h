@@ -22,6 +22,7 @@ public:
   void stitching();
   inline Node *getRoot() const { return root; }
   inline int getSubdivisionLevel() const { return subdivisionLevel; }
+
   void draw(const uint selectedId) const;
   void drawWithNames() const;
   void interpolate(bool constantDistance = true, int spheresPerEdge = 1,
@@ -36,21 +37,23 @@ public:
 
   vector<Triangle> convexHull(vector<point3d> points);
   DVect getScalarField(point3d pt, float T = 0.3, float alpha = 1.5);
-  double F(point3d xt, double k1, double k2, double Itarget,
-                 float T = 0.3, float alpha = 1.5);
-  void evolve(double Itarget, float T = 0.3, float alpha = 1.5, float errorThreshold=1);
+  double F(point3d xt, double k1, double k2, double Itarget, float T = 0.3,
+           float alpha = 1.5);
+  void evolve(double Itarget, float T = 0.3, float alpha = 1.5,
+              float errorThreshold = 1);
 
   int countNode(Node *node, int nb = 0);
   double getMinRadius(Node *node,
                       double rad); // typically initialize with root and the
                                    // radius of root's sphere
-  void clear(); // clear everything to start from scratch
+  void clear();                    // clear everything to start from scratch
   void init(); // get a (very) simple skeleton, with one sphere, to begin with
 
 private:
   Node *root;
-
   int subdivisionLevel = 0; // useful for the evolve process
+  vector<Sphere> interSpheres;
+  vector<Quadrangle> hull;
 
   void stitching(Node *node, Quadrangle motherQuad, bool isRoot = false);
   void draw(Node *node, const uint selectedId,
@@ -66,10 +69,10 @@ private:
   void clearHull() {
     hull.clear();
     hullMesh.clear();
+    subdivisionLevel = 0;
   }
   void clearInterpolation() { interSpheres.clear(); }
-  vector<Sphere> interSpheres;
-  vector<Quadrangle> hull;
+
 };
 
 #endif // SQUELETON_H

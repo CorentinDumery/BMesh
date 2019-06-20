@@ -39,6 +39,7 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   bool fillMode = true;
   bool displaySpheres = true;
   bool displayNormals = false;
+  bool displayHull = false;
 
   // TODO add parameters to the interface
   float Itarget = 0.1;
@@ -88,10 +89,11 @@ public slots:
   void saveCamera();
   void saveSnapShotPlusPlus();
   void pipeline();
-  void hideSpheres();
-  void showMesh();
   void generateRandom();
   void startFromScratch();
+  void hideShowSpheres();
+  void hideShowMesh();
+  void hideShowHull();
 };
 
 #endif // MYVIEWER_H

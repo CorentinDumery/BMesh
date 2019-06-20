@@ -23,11 +23,13 @@ Skeleton::~Skeleton() { delete root; }
 void Skeleton::clear() {
     clearInterpolation();
     clearHull();
+    subdivisionLevel = 0;
     delete root;
 }
 
 void Skeleton::init() {
     root = new Node(new Sphere(point3d(0, 0, 0), 1.5));
+    subdivisionLevel = 0;
 }
 
 void Skeleton::draw(const uint selectedId) const { draw(root, selectedId); }
@@ -629,10 +631,7 @@ double Skeleton::F(point3d xt, double k1, double k2, double Itarget,
 
 void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold) {
 
-  bool checkUp = true;
-
-  //*
-  //Computing Fmax :
+  //Computing Fmax
   double Fmax = -pow(2,15);
   hullMesh.computeCurvaturesNorm(); // TODO compute before evolve call ?
   for (unsigned int t = 0; t < hullMesh.vertices.size(); ++t) {
@@ -640,7 +639,6 @@ void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold
         hullMesh.vertices[t], hullMesh.curvatures[t], hullMesh.curvatures[t], Itarget,
         T, alpha); // returns F (dvect.val) and normal*F (dvect.vect)
     // update Fmax
-    cout << "  F = "<<dvect << endl;
     if (dvect > Fmax){
         if (isinf(dvect)){
             cout << "Error, infinite scalar field" << endl;
@@ -658,13 +656,6 @@ void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold
   double step =
       getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
   double deltaT = step / Fmax;
-  if (checkUp){
-    cout <<" --- " << endl;
-    cout <<" step " << step << endl;
-    cout <<" Fmax " << Fmax << endl;
-    cout <<" DeltaT " << deltaT << endl;
-    cout <<" --- " << endl;
-  }
 
   //TODO iterate this
   vector<Vertex> newVertices;
@@ -680,16 +671,4 @@ void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold
   }
   hullMesh.vertices = newVertices;
 
-  // TODO : bien ranger m_vertices à sa place dans la fonction Mesh
-  // (remplacement de l'ancienne liste "vertices")
-
-  //*/
 }
-
-// merge
-// norme =
-// angles = 90°
-// grande taille
-
-// TODO stop displaying triangles as quadrangles !
-// TODO convert vector<Quadrangle> to an actual mesh
