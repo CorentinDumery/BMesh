@@ -271,10 +271,28 @@ void Skeleton::stitching(Node *node, Quadrangle motherQuad, bool isRoot) {
   }
 
   if (directions.size() == 0) {
-    cout << "Stitching failed : a sphere has no neighboring sphere." << endl;
+    point3d x = point3d(1,0,0);
+    point3d y = point3d(0,1,0);
+    point3d z = point3d(0,0,1);
+    float r = sphere.radius;
+    point3d a = sphere.center + x * r + y * r + z * r;
+    point3d b = sphere.center + x * r + y * r - z * r;
+    point3d c = sphere.center + x * r - y * r - z * r;
+    point3d d = sphere.center + x * r - y * r + z * r;
+    point3d ap, bp, cp, dp;
+    ap = a - 2 * x * r;
+    bp = b - 2 * x * r;
+    cp = c - 2 * x * r;
+    dp = d - 2 * x * r;
+    hull.push_back(Quadrangle(dp, ap, bp, cp));
+    hull.push_back(Quadrangle(a, d , c,b ));
+    hull.push_back(Quadrangle(a, b, bp, ap ));
+    hull.push_back(Quadrangle(b, c , cp,bp ));
+    hull.push_back(Quadrangle(c,d , dp,cp ));
+    hull.push_back(Quadrangle(d,a , ap,dp ));
   }
 
-  if (directions.size() == 1) {
+  else if (directions.size() == 1) {
     point3d x = directions[0];
     point3d y, z;
 
