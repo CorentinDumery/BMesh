@@ -655,7 +655,6 @@ void Skeleton::evolve(double Itarget, float T, float alpha, float errorThreshold
       getMinRadius(root, root->getValue()->radius) / pow(2, subdivisionLevel);
   double deltaT = step / Fmax;
 
-  //TODO iterate this
   vector<Vertex> newVertices;
   //hullMesh.computeNormals();
   hullMesh.computeCurvaturesNorm();

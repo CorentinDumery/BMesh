@@ -41,7 +41,6 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   bool displayNormals = false;
   bool displayHull = false;
 
-  // TODO add parameters to the interface
   float Itarget = 0.1;
   float T = 0.1 ;
 
