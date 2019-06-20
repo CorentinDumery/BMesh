@@ -19,24 +19,24 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   DetailedAction *saveSnapShotPlusPlus = new DetailedAction(
       QIcon(":icons/save_snapshot.png"), "Save snapshot", "Save snapshot", this,
       this, SLOT(saveSnapShotPlusPlus()));
-  DetailedAction *pipeline =
-      new DetailedAction(QIcon(":icons/pipeline.png"), "Transform", "Transform",
-                         this, this, SLOT(pipeline()));
-  DetailedAction *hideShowSpheres = new DetailedAction(
-      QIcon(":icons/hideShowSpheres.png"), "Hide/Show spheres",
-      "Hide/Show spheres", this, this, SLOT(hideShowSpheres()));
-  DetailedAction *hideShowMesh =
-      new DetailedAction(QIcon(":icons/hideShowMesh.png"), "Hide/Show mesh",
-                         "Hide/Show mesh", this, this, SLOT(hideShowMesh()));
-  DetailedAction *hideShowHull =
-      new DetailedAction(QIcon(":icons/hideShowHull.png"), "Hide/Show hull",
-                         "Hide/Show hull", this, this, SLOT(hideShowHull()));
   DetailedAction *generateRandom = new DetailedAction(
       QIcon(":icons/generateRandom.png"), "/!\\ EXPERIMENTAL Generate a random skeleton",
       "/!\\ EXPERIMENTAL Generate a random skeleton", this, this, SLOT(generateRandom()));
   DetailedAction *startFromScratch = new DetailedAction(
       QIcon(":icons/startFromScratch.png"), "Start a new skeleton",
       "Start a new skeleton", this, this, SLOT(startFromScratch()));
+  DetailedAction *pipeline =
+      new DetailedAction(QIcon(":icons/pipeline.png"), "Transform", "Transform",
+                         this, this, SLOT(pipeline()));
+  DetailedCheckableAction *hideShowSpheres = new DetailedCheckableAction(
+      QIcon(":icons/hideShowSpheres.png"), "Hide/Show spheres",
+      "Hide/Show spheres", this, this, SLOT(hideShowSpheres()));
+  DetailedCheckableAction *hideShowMesh =
+      new DetailedCheckableAction(QIcon(":icons/hideShowMesh.png"), "Hide/Show mesh",
+                         "Hide/Show mesh", this, this, SLOT(hideShowMesh()));
+  DetailedCheckableAction *hideShowHull =
+      new DetailedCheckableAction(QIcon(":icons/hideShowHull.png"), "Hide/Show hull",
+                         "Hide/Show hull", this, this, SLOT(hideShowHull()));
 
   // Add them :
   toolBar->addAction(open_mesh);
@@ -459,6 +459,7 @@ void MyViewer::pipeline() {
 
 void MyViewer::hideShowSpheres() {
   displaySpheres = !displaySpheres;
+  displayHull = false;
   update();
 }
 
