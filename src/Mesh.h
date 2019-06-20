@@ -434,55 +434,20 @@ public:
 
   void fairing() {
 
-    cout << "Fairing" << endl;
-
     vector<Vertex> newVertices;
 
     // Replacing all vertices that appear in four quadrangles/triangles
 
     computeNeighbors();
-    computeNormals(); // TODO remove ?
     for (int index = 0; index < vertices.size(); index++) {
-      point3d x = vertices[index].p;
-      int neighborsCount = neighborsId[index].size();
-      cout << neighborsCount << endl;
-      if (neighborsCount != 4) {
-        newVertices.push_back(vertices[index]);
-        continue;
-      }
-      point3d voisin1 = vertices[neighborsId[index][0]].p,
-              voisin2 = vertices[neighborsId[index][1]].p,
-              voisin3 = vertices[neighborsId[index][2]].p,
-              voisin4 = vertices[neighborsId[index][3]].p;
-
-      float k1 = 0; // TODO
-      float k2 = 1;
-      point3d ev; // TODO, attention ev doit correspondre à a et c !!
-      point3d eu;
-
-      if (k1 != k2 && neighborsCount == 4) {
-        point3d a = projectOntoPlane(voisin1, x, normals[index]);
-        point3d b = projectOntoPlane(voisin2, x, normals[index]);
-        point3d c = projectOntoPlane(voisin3, x, normals[index]);
-        point3d d = projectOntoPlane(voisin4, x, normals[index]);
-
-        /*
-        float value;
-        value = pow(point3d::dot((a - x), ev), 2) +
-                pow(point3d::dot((b - x), eu), 2) +
-                pow(point3d::dot((c - x), ev), 2) +
-                pow(point3d::dot((d - x), eu), 2);
-         */
-
-        Vertex v;
-        v.p = (a + c) / 4 + (b + d) / 4;
-        //v.p = (voisin1+voisin3)
-        newVertices.push_back(v);
-
-      } else {
-        // TODO try something for these vertices
-        newVertices.push_back(vertices[index]);
-      }
+        int n=1;
+        point3d newP = vertices[index];
+        for (int voisin=0;voisin<neighborsId[index].size();voisin++){
+            newP += vertices[neighborsId[index][voisin]].p;
+            n ++;
+        }
+        newP = newP/n;
+        newVertices.push_back(newP);
     }
     vertices = newVertices;
   }
