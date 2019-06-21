@@ -37,7 +37,8 @@ class MyViewer : public QGLViewer, public QOpenGLFunctions_3_0 {
   Skeleton skeleton;
   Node *selectedNode = nullptr;
   bool fillMode = true;
-  bool displaySpheres = true;
+  bool displaySkeleton = true;
+  bool displayInterpolatedSphere = true;
   bool displayNormals = false;
   bool displayHull = true;
 
@@ -91,6 +92,7 @@ public slots:
   void generateRandom();
   void startFromScratch();
   void hideShowSpheres();
+  void hideShowInterpolatedSpheres();
   void hideShowMesh();
   void hideShowHull();
   void hideShowNormals();

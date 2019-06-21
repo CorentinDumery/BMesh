@@ -31,8 +31,11 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
       new DetailedAction(QIcon(":icons/pipeline.png"), "Transform", "Transform",
                          this, this, SLOT(pipeline()));
   DetailedCheckableAction *hideShowSpheres = new DetailedCheckableAction(
-      QIcon(":icons/hideShowSpheres.png"), "Hide/Show spheres",
-      "Hide/Show spheres", this, this, SLOT(hideShowSpheres()));
+      QIcon(":icons/hideShowSpheres.png"), "Hide/Show skeleton",
+      "Hide/Show skeleton", this, this, SLOT(hideShowSpheres()));
+  DetailedCheckableAction *hideShowInterpolatedSpheres = new DetailedCheckableAction(
+      QIcon(":icons/interpolate.png"), "Hide/Show interpolated spheres",
+      "Hide/Show interpolated spheres", this, this, SLOT(hideShowInterpolatedSpheres()));
   DetailedCheckableAction *hideShowMesh = new DetailedCheckableAction(
       QIcon(":icons/hideShowMesh.png"), "Show/Hide mesh", "Show/Hide mesh",
       this, this, SLOT(hideShowMesh()));
@@ -57,6 +60,7 @@ void MyViewer::add_actions_to_toolBar(QToolBar *toolBar) {
   toolBar->addAction(pipeline);
   toolBar->addSeparator();
   toolBar->addAction(hideShowSpheres);
+  toolBar->addAction(hideShowInterpolatedSpheres);
   toolBar->addAction(hideShowMesh);
   toolBar->addAction(hideShowHull);
   toolBar->addAction(hideShowNormals);
@@ -70,17 +74,17 @@ void MyViewer::draw() {
     glPolygonMode(GL_FRONT, GL_FILL);
   else
     glPolygonMode(GL_FRONT, GL_LINE);
-  if (displaySpheres) {
+  if (displaySkeleton)
     skeleton.draw(selectedName());
+  if (displayInterpolatedSphere)
     skeleton.drawInterpolation();
-  }
   if (displayNormals) {
     skeleton.hullMesh.computeNormals();
     skeleton.hullMesh.drawNormals();
   }
-  if (displayHull) {
+  if (displayHull)
     skeleton.hullMesh.draw();
-  }
+
   // mesh.draw();
 }
 
@@ -455,9 +459,15 @@ void MyViewer::pipeline() {
 }
 
 void MyViewer::hideShowSpheres() {
-  displaySpheres = !displaySpheres;
+  displaySkeleton = !displaySkeleton;
   //  displayHull = false;
   update();
+}
+
+void MyViewer::hideShowInterpolatedSpheres()
+{
+    displayInterpolatedSphere = !displayInterpolatedSphere;
+    update();
 }
 
 void MyViewer::hideShowMesh() {
