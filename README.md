@@ -8,7 +8,7 @@
 
 ## Installation
 
-* run the install script : ```bash install```
+* run the install script : ```bash install.sh```
 
 ## Compilation 
 
