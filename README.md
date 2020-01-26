@@ -27,3 +27,9 @@ Supervisor : Jean-Marc Thierry (https://perso.telecom-paristech.fr/jthiery/)
 
 * ```qmake```
 * ```make``` (from build folder)
+
+## Examples
+
+![Ex1](https://github.com/CorentinDumery/BMesh/blob/master/images/BMesh%20example.PNG)
+
+![Ex2](https://github.com/CorentinDumery/BMesh/blob/master/images/BMesh%20example.PNG)
