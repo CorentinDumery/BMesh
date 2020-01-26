@@ -32,4 +32,4 @@ Supervisor : Jean-Marc Thierry (https://perso.telecom-paristech.fr/jthiery/)
 
 ![Ex1](https://github.com/CorentinDumery/BMesh/blob/master/images/BMesh%20example.PNG)
 
-![Ex2](https://github.com/CorentinDumery/BMesh/blob/master/images/BMesh%20example2.PNG)
+![Ex2](https://github.com/CorentinDumery/BMesh/blob/master/images/BMesh%20example%202.PNG)
