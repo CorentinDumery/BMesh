@@ -6,13 +6,13 @@
 SphereEdit::SphereEdit(QWidget *parent)
     : QWidget(parent), ui(new Ui::SphereEdit) {
   const double MAX_COORDINATE = 10.0;
-  QDoubleValidator *validator =
+  /*QDoubleValidator *validator =
       new QDoubleValidator(-MAX_COORDINATE, MAX_COORDINATE, 1, this);
   ui->setupUi(this);
   ui->xEditLine->setValidator(validator);
   ui->yEditLine->setValidator(validator);
   ui->zEditLine->setValidator(validator);
-  ui->radiusEditLine->setValidator(validator);
+  ui->radiusEditLine->setValidator(validator);*/
 
   connect(ui->addButton, SIGNAL(released()), this, SLOT(handleAddButton()));
   connect(ui->editButton, SIGNAL(released()), this, SLOT(handleEditButton()));

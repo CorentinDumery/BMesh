@@ -233,6 +233,9 @@ void MyViewer::keyPressEvent(QKeyEvent *event) {
       selectedNode->addChild(new Sphere(pos, 1)); // add the node
       pipeline();
     }
+  } else if (event->key() == Qt::Key_2) {
+      selectedNode->sphere->radius *= 1.2;
+      pipeline();
   } else if (event->key() == Qt::Key_M) {
     if (selectedNode != nullptr) {
       point3d center = selectedNode->getValue()

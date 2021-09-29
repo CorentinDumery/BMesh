@@ -35,15 +35,18 @@ SOURCES += ./src/main.cpp \
 
 #QGLViewer
 {
-    unix:!macx: LIBS += -L$$PWD/extern/libQGLViewer-2.7.1/QGLViewer/ -lQGLViewer-qt5
+    unix:!macx: LIBS += -L$$PWD/libQGLViewer-2.7.2/QGLViewer/
 
-    INCLUDEPATH += $$PWD/extern/libQGLViewer-2.7.1/QGLViewer
-    DEPENDPATH += $$PWD/extern/libQGLViewer-2.7.1/QGLViewer
+    INCLUDEPATH += $$PWD/libQGLViewer-2.7.2/QGLViewer
+    DEPENDPATH += $$PWD/libQGLViewer-2.7.2/QGLViewer
+    INCLUDEPATH += /export/home/cordum/other/bmesh/libQGLViewer-2.7.2/QGLViewer
+    DEPENDPATH += "/export/home/cordum/other/bmesh/libQGLViewer-2.7.2/QGLViewer"
+    LIBS += -L~/other/bmesh/libQGLViewer-2.7.2/QGLViewer/
 }
 
 #GSL
 {
-    unix:!macx: LIBS += -L$$PWD/extern/gsl/lib/ -lgsl
+    unix:!macx: LIBS += -L$$PWD/extern/gsl/lib/ -lgsl -lgslcblas -lQGLViewer-qt5
 
     INCLUDEPATH += $$PWD/extern/gsl/include
     DEPENDPATH += $$PWD/extern/gsl/include

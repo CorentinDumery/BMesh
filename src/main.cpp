@@ -1,7 +1,7 @@
 #include "MyViewer.h"
 #include "node.h"
 #include "skeleton.h"
-#include "sphereedit.h"
+//#include "sphereedit.h"
 #include "pipelinestep.h"
 #include "mediator.h"
 #include <QApplication>
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   QMainWindow *mainWindow = new QMainWindow;
   QWidget *mainWidget = new QWidget;
   QGridLayout *mainLayout = new QGridLayout;
-  SphereEdit *sphereEdit = new SphereEdit;
+  //SphereEdit *sphereEdit = new SphereEdit;
   PipelineStep *pipelineStep = new PipelineStep;
 
   mainWidget->setLayout(mainLayout);
@@ -35,14 +35,14 @@ int main(int argc, char **argv) {
 
   mainLayout->addWidget(viewer, 0, 0);
   mainLayout->addWidget(pipelineStep, 0,1);
-  mainLayout->addWidget(sphereEdit, 1,0, 1,1);
+  //mainLayout->addWidget(sphereEdit, 1,0, 1,1);
   mainWindow->addToolBar(toolBar);
   mainWindow->setCentralWidget(mainWidget);
   mainWindow->resize(640, 525);
 
   // Connect viewer slection to ui sphere editing
-  QObject::connect(viewer, &MyViewer::nodeSelected, sphereEdit,
-                   &SphereEdit::updateSelection);
+  //QObject::connect(viewer, &MyViewer::nodeSelected, sphereEdit,
+  //                 &SphereEdit::updateSelection);
 
   // Connect viewer and pipelinestep
   QObject::connect(pipelineStep, &PipelineStep::interpolate, viewer,

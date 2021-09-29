@@ -162,6 +162,7 @@ Node *Skeleton::find(Node *node, const uint selectedId) const {
     if (tempNode->getValue()->getId() == selectedId)
       return tempNode;
   }
+  return node;
 }
 
 void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,

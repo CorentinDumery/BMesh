@@ -35,8 +35,9 @@ public:
     sphere->radius = radius;
   }
 
-private:
   Sphere *sphere;
+
+private:
   vector<Node *> children;
 };
 
