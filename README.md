@@ -11,7 +11,7 @@ Contributors :
 - Ginger Delmas
 - Corentin Dumery
 
-Supervisor : Jean-Marc Thierry (https://perso.telecom-paristech.fr/jthiery/)
+Supervisor : Jean-Marc Thiery (https://perso.telecom-paristech.fr/jthiery/)
 
 ## Requirements
 

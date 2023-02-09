@@ -35,10 +35,10 @@ SOURCES += ./src/main.cpp \
 
 #QGLViewer
 {
-    unix:!macx: LIBS += -L$$PWD/extern/libQGLViewer-2.7.1/QGLViewer/ -lQGLViewer-qt5
+    unix:!macx: LIBS += -L/home/corentin/installed/libQGLViewer-2.7.2/QGLViewer/ -lQGLViewer-qt5
 
-    INCLUDEPATH += $$PWD/extern/libQGLViewer-2.7.1/QGLViewer
-    DEPENDPATH += $$PWD/extern/libQGLViewer-2.7.1/QGLViewer
+    INCLUDEPATH += /home/corentin/installed/libQGLViewer-2.7.2/QGLViewer
+    DEPENDPATH += /home/corentin/installed/libQGLViewer-2.7.2/QGLViewer
 }
 
 #GSL

@@ -158,10 +158,13 @@ Node *Skeleton::find(Node *node, const uint selectedId) const {
   if (node->getValue()->getId() == selectedId)
     return node;
   for (auto child : node->getChildren()) {
+    cout << "Child "<< child->getValue()->getId() << endl;
     Node *tempNode = find(child, selectedId);
     if (tempNode->getValue()->getId() == selectedId)
       return tempNode;
   }
+  cout << "Couldn't find node" << endl;
+  return node;
 }
 
 void Skeleton::interpolate(bool constantDistance, int spheresPerEdge,
